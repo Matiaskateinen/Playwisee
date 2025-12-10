@@ -297,7 +297,11 @@ df_grouped["combo_label"] = df_grouped.apply(
 )
 
 df_grouped["Profit"] = df_grouped["wins"] - df_grouped["bets"]
-df_grouped["ROI %"] = (df_grouped["Profit"] / df_grouped["bets"]) * 100
+df_grouped["ROI %"] = np.where(
+    df_grouped["bets"] > 0,
+    (df_grouped["Profit"] / df_grouped["bets"]) * 100,
+    0.0,
+)
 
 # --- ROUND NUMERIC COLUMNS TO 2 DECIMALS ---
 numeric_cols_grouped = df_grouped.select_dtypes(include="number").columns
@@ -321,13 +325,13 @@ avg_bet = round(avg_bet, 2)
 by_product = (
     df_grouped.groupby("product")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
-    .assign(roi=lambda x: (x["ret"]-x["stake"]) / x["stake"] * 100)
+    .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
 by_ticket = (
     df_grouped.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
-    .assign(roi=lambda x: (x["ret"]-x["stake"]) / x["stake"] * 100)
+    .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
 by_market_group = None
@@ -349,7 +353,7 @@ if "market name" in df.columns:
     by_market_group = (
         df.groupby("market_group")
         .agg(stake=("bets","sum"), ret=("wins","sum"))
-        .assign(roi=lambda x: (x["ret"]-x["stake"]) / x["stake"] * 100)
+        .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
         .sort_values("roi", ascending=False)
     )
 
