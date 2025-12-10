@@ -10,68 +10,178 @@ pd.options.display.float_format = "{:.2f}".format
 # ---------- GLOBAL STYLE ----------
 st.markdown("""
 <style>
+:root {
+    --bg: #05070d;
+    --card: #0a0f18;
+    --stroke: #1c2331;
+    --muted: #8ea2b5;
+    --text: #e8edf4;
+    --accent: #41f0c0;
+}
 html, body, [class*="css"] {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text);
+}
+.app-wrapper {
+    position: relative;
+    isolation: isolate;
 }
 .main {
-    background: radial-gradient(circle at top left, #1c2833 0, #05070b 45%, #020308 100%);
+    background: radial-gradient(circle at 20% 20%, rgba(65, 240, 192, 0.12), transparent 24%),
+                radial-gradient(circle at 80% 0%, rgba(0, 157, 255, 0.1), transparent 23%),
+                linear-gradient(135deg, #060910 0%, #070a12 50%, #05070d 100%);
+}
+.main:before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
 }
 [data-testid="stSidebar"] {
-    background: #05070b;
-    border-right: 1px solid #1f2933;
+    background: linear-gradient(180deg, rgba(11,16,26,0.95), rgba(6,9,15,0.96));
+    border-right: 1px solid var(--stroke);
+    box-shadow: 8px 0 30px rgba(0,0,0,0.45);
 }
-[data-testid="stSidebar"] h2 {
+[data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
     font-weight: 800 !important;
     letter-spacing: 0.08em;
-    font-size: 1.1rem !important;
+    font-size: 1.05rem !important;
+    text-transform: uppercase;
+}
+[data-testid="stSidebar"] .st-emotion-cache-1q7ch1g p {
+    color: var(--muted);
 }
 h1 {
     font-weight: 800 !important;
-    font-size: 2.4rem !important;
+    font-size: 2.5rem !important;
     letter-spacing: 0.04em;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
 }
 .playwise-subtitle {
-    font-size: 0.95rem;
-    opacity: 0.75;
-    margin-bottom: 0.5rem;
+    font-size: 0.97rem;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
 }
 .hero-card {
-    background: rgba(9, 12, 20, 0.9);
+    position: relative;
+    overflow: hidden;
+    background: var(--card);
     border-radius: 18px;
-    padding: 20px 22px 18px 22px;
-    border: 1px solid #202632;
-    box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+    padding: 22px 24px 20px 24px;
+    border: 1px solid var(--stroke);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+}
+.hero-card:before {
+    content: '';
+    position: absolute;
+    inset: -10% auto auto -10%;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(circle, rgba(65, 240, 192, 0.16), transparent 65%);
+    filter: blur(6px);
+}
+.hero-card:after {
+    content: '';
+    position: absolute;
+    inset: auto -30% -30% auto;
+    width: 35%;
+    height: 35%;
+    background: radial-gradient(circle, rgba(0, 167, 255, 0.16), transparent 60%);
+    filter: blur(10px);
+}
+.hero-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+    position: relative;
+    z-index: 1;
+}
+.hero-grid__item {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 12px;
+    padding: 10px 12px;
+}
+.hero-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.hero-value {
+    font-weight: 700;
+    color: var(--text);
 }
 .element-container:has(div[data-testid="metric-container"]) {
-    background: #080b11;
+    background: rgba(11,16,26,0.9);
     border-radius: 14px;
     padding: 14px 14px 10px 14px;
-    border: 1px solid #222833;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+    border: 1px solid var(--stroke);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.55);
     transition: all 0.12s ease;
 }
 .element-container:has(div[data-testid="metric-container"]):hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.65);
+}
+[data-testid="stMetricLabel"] {
+    color: var(--muted) !important;
+    letter-spacing: 0.02em;
+}
+[data-testid="stMetricValue"] {
+    color: var(--text) !important;
+    font-weight: 800 !important;
 }
 .stTabs [role="tab"] {
     padding: 10px 22px;
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
 }
 .stTabs [role="tab"][aria-selected="true"] {
-    border-bottom: 3px solid #38ef7d;
+    border-bottom: 3px solid var(--accent);
+    color: var(--text);
 }
 div[data-testid="dataframe"] {
     border-radius: 14px;
     overflow: hidden;
-    border: 1px solid #222733;
+    border: 1px solid var(--stroke);
     margin-top: 10px;
+    background: rgba(10, 15, 24, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.stDataFrame thead tr { background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0)); }
+.stDataFrame tbody tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.stDataFrame tbody tr:hover { background: rgba(65, 240, 192, 0.06); }
+.data-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+.data-chip__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(65, 240, 192, 0.6);
 }
 .stExpander {
     border-radius: 12px !important;
-    border: 1px solid #222733 !important;
+    border: 1px solid var(--stroke) !important;
     background: rgba(7,10,16,0.8) !important;
 }
 h3, h4 {
@@ -81,15 +191,19 @@ h3, h4 {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 999px;
     font-size: 0.72rem;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    background: rgba(56, 239, 125, 0.09);
-    color: #96f7c4;
-    border: 1px solid rgba(56,239,125,0.4);
-    margin-bottom: 6px;
+    background: linear-gradient(120deg, rgba(65, 240, 192, 0.15), rgba(0, 167, 255, 0.15));
+    color: #9bf6da;
+    border: 1px solid rgba(65, 240, 192, 0.45);
+    margin-bottom: 8px;
+}
+.stFileUploader div[data-testid="stFileUploaderDropzone"] {
+    border: 1px dashed var(--stroke);
+    background: rgba(255,255,255,0.02);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -106,19 +220,36 @@ with st.sidebar:
 
 # ---------- MAIN ----------
 st.title("PlayWise Pilot")
-st.markdown('<p class="playwise-subtitle">Your stats. Your edge.</p>', unsafe_allow_html=True)
+st.markdown(
+    '<p class="playwise-subtitle">Precision-grade cockpit for disciplined bettors.</p>',
+    unsafe_allow_html=True,
+)
 
 if uploaded_file is None:
     st.markdown(
         """
         <div class="hero-card">
-            <div class="section-pill">SETUP</div>
-            <h3 style="margin-top:2px;">Upload your first betting history</h3>
-            <p style="opacity:0.8; font-size:0.9rem; max-width:460px;">
-                Drop in a Sportsbook Excel export in the sidebar and PlayWise will turn it
-                into a clean overview of your betting performance: ROI, profit, market edges
-                and your betting profile.
+            <div class="section-pill">Setup</div>
+            <h3 style="margin-top:4px; margin-bottom:6px;">Import and get a lab-grade view of your betting</h3>
+            <p style="opacity:0.82; font-size:0.95rem; max-width:520px; line-height:1.55;">
+                Drop a Sportsbook Excel export in the sidebar. PlayWise cleans, aggregates and serves
+                a clinical read on your bankroll movement: ROI, profit velocity, edge pockets and your
+                behavioural profile.
             </p>
+            <div class="hero-grid">
+                <div class="hero-grid__item">
+                    <span class="hero-label">Format</span>
+                    <span class="hero-value">.xlsx (Veikkaus)</span>
+                </div>
+                <div class="hero-grid__item">
+                    <span class="hero-label">Insights</span>
+                    <span class="hero-value">ROI, profit, markets</span>
+                </div>
+                <div class="hero-grid__item">
+                    <span class="hero-label">Profile</span>
+                    <span class="hero-value">Singles vs combos</span>
+                </div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -279,6 +410,50 @@ with top_cols[1]:
 st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 
 
+# ---------- QUICK DIGEST ----------
+date_start = df_grouped["date"].min()
+date_end = df_grouped["date"].max()
+unique_products = df_grouped["product"].nunique()
+
+digest_cols = st.columns([1.4, 1])
+
+with digest_cols[0]:
+    st.markdown("#### Session digest")
+    st.markdown(
+        """
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
+            <div class="data-chip"><span class="data-chip__dot"></span>Rows: <strong>{rows}</strong></div>
+            <div class="data-chip"><span class="data-chip__dot"></span>Products: <strong>{products}</strong></div>
+            <div class="data-chip"><span class="data-chip__dot"></span>Period: <strong>{start} → {end}</strong></div>
+        </div>
+        """.format(
+            rows=len(df_grouped),
+            products=unique_products,
+            start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
+            end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
+        ),
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        """
+        - **Volume**: Keeps every ticket aggregated, no dilution between singles and combos.
+        - **ROIs**: Rounded to 2 decimals for clinical readability.
+        - **Markets**: Auto-bucketed by props, totals, lines and 1X2 where present.
+        """
+    )
+
+with digest_cols[1]:
+    st.markdown("#### Micro-highlights")
+    if by_product is not None and not by_product.empty:
+        best_product = by_product["roi"].idxmax()
+        st.write(f"✅ Strongest lane: **{best_product}** ({by_product.loc[best_product, 'roi']:.2f}% ROI)")
+    if by_product is not None and not by_product.empty:
+        worst_product = by_product["roi"].idxmin()
+        st.write(f"⚠️ Watchlist: **{worst_product}** ({by_product.loc[worst_product, 'roi']:.2f}% ROI)")
+    st.write(f"🧮 Mean stake per ticket: **{avg_bet:.2f} €**")
+
+
 # ---------- TABS ----------
 st.markdown("")
 tab1, tab2, tab3 = st.tabs(["📊 Markets", "🎟 Tickets", "📄 Raw data"])
@@ -296,6 +471,20 @@ with tab1:
         )
     else:
         st.info("No market data found in this file (missing 'market name').")
+
+    if by_product is not None and not by_product.empty:
+        st.markdown("#### ROI by product")
+        product_chart_df = by_product.reset_index().rename(columns={"index": "product"})
+        roi_bar = (
+            alt.Chart(product_chart_df)
+            .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6)
+            .encode(
+                x=alt.X("product:N", sort="-y", title="Product"),
+                y=alt.Y("roi:Q", title="ROI %"),
+                color=alt.value("#41f0c0")
+            )
+        )
+        st.altair_chart(roi_bar, use_container_width=True)
 
 with tab2:
     st.markdown("#### Live vs Prematch")
