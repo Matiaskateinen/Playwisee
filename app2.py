@@ -477,14 +477,47 @@ with tab1:
         product_chart_df = by_product.reset_index().rename(columns={"index": "product"})
         roi_bar = (
             alt.Chart(product_chart_df)
-            .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6)
+            .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
             .encode(
                 x=alt.X("product:N", sort="-y", title="Product"),
                 y=alt.Y("roi:Q", title="ROI %"),
-                color=alt.value("#41f0c0")
+                color=alt.Color(
+                    "roi:Q",
+                    title="ROI %",
+                    scale=alt.Scale(domainMid=0, scheme="tealred"),
+                    legend=None,
+                ),
+                tooltip=[
+                    alt.Tooltip("product:N", title="Product"),
+                    alt.Tooltip("roi:Q", title="ROI %", format=".2f"),
+                    alt.Tooltip("stake:Q", title="Stake", format=".2f"),
+                    alt.Tooltip("ret:Q", title="Return", format=".2f"),
+                ],
+            )
+            .properties(height=320)
+        )
+
+        roi_labels = (
+            alt.Chart(product_chart_df)
+            .mark_text(fontWeight="bold", dx=8, dy=-1, color="#e8edf4")
+            .encode(
+                x=alt.X("product:N", sort="-y"),
+                y=alt.Y("roi:Q"),
+                text=alt.Text("roi:Q", format="+.1f"),
+                color=alt.condition("datum.roi >= 0", alt.value("#baf7e4"), alt.value("#ffb2b2")),
             )
         )
-        st.altair_chart(roi_bar, use_container_width=True)
+
+        zero_line = alt.Chart(product_chart_df).mark_rule(color="#263040", strokeDash=[4, 4]).encode(y=alt.datum(0))
+
+        roi_chart = (
+            (roi_bar + roi_labels + zero_line)
+            .configure_axis(grid=False, labelColor="#e8edf4", titleColor="#e8edf4")
+            .configure_view(strokeOpacity=0)
+            .configure_legend(labelColor="#e8edf4", titleColor="#e8edf4")
+        )
+
+        st.altair_chart(roi_chart, use_container_width=True)
 
 with tab2:
     st.markdown("#### Live vs Prematch")
