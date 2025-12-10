@@ -7,6 +7,18 @@ st.set_page_config(page_title="PlayWise Pilot", layout="wide")
 
 pd.options.display.float_format = "{:.2f}".format
 
+
+def safe_read_excel(uploaded_file: bytes) -> pd.DataFrame:
+    """Read the uploaded Excel file defensively so the app always boots."""
+
+    try:
+        df = pd.read_excel(uploaded_file)
+    except Exception as exc:  # pragma: no cover - streamlit surface
+        st.error(f"Could not read Excel file: {exc}")
+        st.stop()
+
+    return df
+
 # ---------- GLOBAL STYLE ----------
 st.markdown("""
 <style>
@@ -257,7 +269,7 @@ if uploaded_file is None:
     st.stop()
 
 # ---------- DATA PROCESSING ----------
-df = pd.read_excel(uploaded_file)
+df = safe_read_excel(uploaded_file)
 required_cols = {"date", "rank", "ticket type", "product", "bets", "wins", "odds"}
 
 if not required_cols.issubset(df.columns):
@@ -289,7 +301,16 @@ df_grouped["combo_label"] = df_grouped.apply(
 )
 
 df_grouped["Profit"] = df_grouped["wins"] - df_grouped["bets"]
-df_grouped["ROI %"] = (df_grouped["Profit"] / df_grouped["bets"]) * 100
+df_grouped["ROI %"] = np.where(
+    df_grouped["bets"] > 0,
+    (df_grouped["Profit"] / df_grouped["bets"]) * 100,
+    0.0,
+)
+
+# short circuit if there's nothing to show, preventing downstream styler errors
+if df_grouped.empty:
+    st.warning("No rows found in the uploaded file. Add bets to see analytics.")
+    st.stop()
 
 # --- ROUND NUMERIC COLUMNS TO 2 DECIMALS ---
 numeric_cols_grouped = df_grouped.select_dtypes(include="number").columns
@@ -313,13 +334,13 @@ avg_bet = round(avg_bet, 2)
 by_product = (
     df_grouped.groupby("product")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
-    .assign(roi=lambda x: (x["ret"]-x["stake"]) / x["stake"] * 100)
+    .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
 by_ticket = (
     df_grouped.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
-    .assign(roi=lambda x: (x["ret"]-x["stake"]) / x["stake"] * 100)
+    .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
 by_market_group = None
@@ -341,7 +362,7 @@ if "market name" in df.columns:
     by_market_group = (
         df.groupby("market_group")
         .agg(stake=("bets","sum"), ret=("wins","sum"))
-        .assign(roi=lambda x: (x["ret"]-x["stake"]) / x["stake"] * 100)
+        .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
         .sort_values("roi", ascending=False)
     )
 
