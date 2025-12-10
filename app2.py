@@ -237,42 +237,35 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-hero_html = """
-<div class="hero-card">
-    <div class="section-pill">Setup</div>
-    <h3 style="margin-top:4px; margin-bottom:6px;">PlayWise Pilot – multi-lens cockpit for sharp bettors</h3>
-    <p style="opacity:0.86; font-size:0.97rem; max-width:560px; line-height:1.6;">
-        Drop a Sportsbook Excel export in the sidebar. We stitch together bankroll physics, rhythm, and risk hygiene
-        so you see the epic throughline: where your edge lives, how fast it compounds, and how disciplined the ride is.
-    </p>
-    <div class="hero-grid">
-        <div class="hero-grid__item">
-            <span class="hero-label">Format</span>
-            <span class="hero-value">.xlsx (Veikkaus)</span>
-        </div>
-        <div class="hero-grid__item">
-            <span class="hero-label">Signal Stack</span>
-            <span class="hero-value">ROI pulse, profit velocity</span>
-        </div>
-        <div class="hero-grid__item">
-            <span class="hero-label">Discipline Lens</span>
-            <span class="hero-value">Singles vs combos, stake pacing</span>
-        </div>
-        <div class="hero-grid__item">
-            <span class="hero-label">Market Map</span>
-            <span class="hero-value">Props, totals, lines, 1X2</span>
-        </div>
-    </div>
-    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
-        <div class="data-chip"><span class="data-chip__dot"></span>Edge radar: find pockets with lift</div>
-        <div class="data-chip"><span class="data-chip__dot"></span>Rhythm map: steady vs swingy runs</div>
-        <div class="data-chip"><span class="data-chip__dot"></span>Bankroll armor: drawdown awareness</div>
-    </div>
-</div>
-"""
-
 if uploaded_file is None:
-    st.markdown(hero_html, unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="hero-card">
+            <div class="section-pill">Setup</div>
+            <h3 style="margin-top:4px; margin-bottom:6px;">Import and get a lab-grade view of your betting</h3>
+            <p style="opacity:0.82; font-size:0.95rem; max-width:520px; line-height:1.55;">
+                Drop a Sportsbook Excel export in the sidebar. PlayWise cleans, aggregates and serves
+                a clinical read on your bankroll movement: ROI, profit velocity, edge pockets and your
+                behavioural profile.
+            </p>
+            <div class="hero-grid">
+                <div class="hero-grid__item">
+                    <span class="hero-label">Format</span>
+                    <span class="hero-value">.xlsx (Veikkaus)</span>
+                </div>
+                <div class="hero-grid__item">
+                    <span class="hero-label">Insights</span>
+                    <span class="hero-value">ROI, profit, markets</span>
+                </div>
+                <div class="hero-grid__item">
+                    <span class="hero-label">Profile</span>
+                    <span class="hero-value">Singles vs combos</span>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.stop()
 
 # ---------- DATA PROCESSING ----------
@@ -500,33 +493,72 @@ with tab1:
     else:
         st.info("No market data found in this file (missing 'market name').")
 
+    if by_product is not None and not by_product.empty:
+        st.markdown("#### ROI by product")
+        product_chart_df = by_product.reset_index().rename(columns={"index": "product"})
+        roi_bar = (
+            alt.Chart(product_chart_df)
+            .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
+            .encode(
+                x=alt.X("product:N", sort="-y", title="Product"),
+                y=alt.Y("roi:Q", title="ROI %"),
+                color=alt.Color(
+                    "roi:Q",
+                    title="ROI %",
+                    legend=None,
+                ),
+                tooltip=[
+                    alt.Tooltip("product:N", title="Product"),
+                    alt.Tooltip("roi:Q", title="ROI %", format=".2f"),
+                    alt.Tooltip("stake:Q", title="Stake", format=".2f"),
+                    alt.Tooltip("ret:Q", title="Return", format=".2f"),
+                ],
+            )
+            .properties(height=320)
+        )
+
+        roi_labels = (
+            alt.Chart(product_chart_df)
+            .mark_text(fontWeight="bold", dx=8, dy=-1, color="#e8edf4")
+            .encode(
+                x=alt.X("product:N", sort="-y"),
+                y=alt.Y("roi:Q"),
+                text=alt.Text("roi:Q", format="+.1f"),
+                color=alt.condition("datum.roi >= 0", alt.value("#baf7e4"), alt.value("#ffb2b2")),
+            )
+        )
+
+        zero_line = alt.Chart(product_chart_df).mark_rule(color="#263040", strokeDash=[4, 4]).encode(y=alt.datum(0))
+
+        roi_chart = (
+            (roi_bar + roi_labels + zero_line)
+            .configure_axis(grid=False, labelColor="#e8edf4", titleColor="#e8edf4")
+            .configure_view(strokeOpacity=0)
+            .configure_legend(labelColor="#e8edf4", titleColor="#e8edf4")
+        )
+
+        st.altair_chart(roi_chart, use_container_width=True)
 
 with tab2:
     st.markdown("#### Live vs Prematch")
-    if by_product is None or by_product.empty:
-        st.info("No product data to display yet.")
-    else:
-        num_cols_prod = by_product.select_dtypes(include="number").columns
-        formatter_prod = {col: "{:.2f}" for col in num_cols_prod}
-        st.dataframe(
-            by_product.style
-                .applymap(color_roi, subset=["roi"])
-                .format(formatter_prod),
-            use_container_width=True
-        )
+    num_cols_prod = by_product.select_dtypes(include="number").columns
+    formatter_prod = {col: "{:.2f}" for col in num_cols_prod}
+    st.dataframe(
+        by_product.style
+            .applymap(color_roi, subset=["roi"])
+            .format(formatter_prod),
+        use_container_width=True
+    )
 
     st.markdown("#### Combo vs Single")
-    if by_ticket is None or by_ticket.empty:
-        st.info("No ticket-type data to display yet.")
-    else:
-        num_cols_ticket = by_ticket.select_dtypes(include="number").columns
-        formatter_ticket = {col: "{:.2f}" for col in num_cols_ticket}
-        st.dataframe(
-            by_ticket.style
-                .applymap(color_roi, subset=["roi"])
-                .format(formatter_ticket),
-            use_container_width=True
-        )
+    num_cols_ticket = by_ticket.select_dtypes(include="number").columns
+    formatter_ticket = {col: "{:.2f}" for col in num_cols_ticket}
+    st.dataframe(
+        by_ticket.style
+            .applymap(color_roi, subset=["roi"])
+            .format(formatter_ticket),
+        use_container_width=True
+    )
 
 with tab3:
     with st.expander("Ticket-level data (aggregated singles & combos)", expanded=True):
