@@ -230,11 +230,10 @@ if uploaded_file is None:
         """
         <div class="hero-card">
             <div class="section-pill">Setup</div>
-            <h3 style="margin-top:4px; margin-bottom:6px;">Import and get a lab-grade view of your betting</h3>
-            <p style="opacity:0.82; font-size:0.95rem; max-width:520px; line-height:1.55;">
-                Drop a Sportsbook Excel export in the sidebar. PlayWise cleans, aggregates and serves
-                a clinical read on your bankroll movement: ROI, profit velocity, edge pockets and your
-                behavioural profile.
+            <h3 style="margin-top:4px; margin-bottom:6px;">PlayWise Pilot – multi-lens cockpit for sharp bettors</h3>
+            <p style="opacity:0.86; font-size:0.97rem; max-width:560px; line-height:1.6;">
+                Drop a Sportsbook Excel export in the sidebar. We stitch together bankroll physics, rhythm, and risk hygiene
+                so you see the epic throughline: where your edge lives, how fast it compounds, and how disciplined the ride is.
             </p>
             <div class="hero-grid">
                 <div class="hero-grid__item">
@@ -242,13 +241,22 @@ if uploaded_file is None:
                     <span class="hero-value">.xlsx (Veikkaus)</span>
                 </div>
                 <div class="hero-grid__item">
-                    <span class="hero-label">Insights</span>
-                    <span class="hero-value">ROI, profit, markets</span>
+                    <span class="hero-label">Signal Stack</span>
+                    <span class="hero-value">ROI pulse, profit velocity</span>
                 </div>
                 <div class="hero-grid__item">
-                    <span class="hero-label">Profile</span>
-                    <span class="hero-value">Singles vs combos</span>
+                    <span class="hero-label">Discipline Lens</span>
+                    <span class="hero-value">Singles vs combos, stake pacing</span>
                 </div>
+                <div class="hero-grid__item">
+                    <span class="hero-label">Market Map</span>
+                    <span class="hero-value">Props, totals, lines, 1X2</span>
+                </div>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
+                <div class="data-chip"><span class="data-chip__dot"></span>Edge radar: find pockets with lift</div>
+                <div class="data-chip"><span class="data-chip__dot"></span>Rhythm map: steady vs swingy runs</div>
+                <div class="data-chip"><span class="data-chip__dot"></span>Bankroll armor: drawdown awareness</div>
             </div>
         </div>
         """,
@@ -472,19 +480,6 @@ with tab1:
     else:
         st.info("No market data found in this file (missing 'market name').")
 
-    if by_product is not None and not by_product.empty:
-        st.markdown("#### ROI by product")
-        product_chart_df = by_product.reset_index().rename(columns={"index": "product"})
-        roi_bar = (
-            alt.Chart(product_chart_df)
-            .mark_bar(cornerRadiusTopLeft=6, cornerRadiusTopRight=6)
-            .encode(
-                x=alt.X("product:N", sort="-y", title="Product"),
-                y=alt.Y("roi:Q", title="ROI %"),
-                color=alt.value("#41f0c0")
-            )
-        )
-        st.altair_chart(roi_bar, use_container_width=True)
 
 with tab2:
     st.markdown("#### Live vs Prematch")
