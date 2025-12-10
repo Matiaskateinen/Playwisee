@@ -484,7 +484,6 @@ with tab1:
                 color=alt.Color(
                     "roi:Q",
                     title="ROI %",
-                    scale=alt.Scale(domainMid=0, scheme="tealred"),
                     legend=None,
                 ),
                 tooltip=[
