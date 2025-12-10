@@ -7,6 +7,18 @@ st.set_page_config(page_title="PlayWise Pilot", layout="wide")
 
 pd.options.display.float_format = "{:.2f}".format
 
+
+def safe_read_excel(uploaded_file: bytes) -> pd.DataFrame:
+    """Read the uploaded Excel file defensively so the app always boots."""
+
+    try:
+        df = pd.read_excel(uploaded_file)
+    except Exception as exc:  # pragma: no cover - streamlit surface
+        st.error(f"Could not read Excel file: {exc}")
+        st.stop()
+
+    return df
+
 # ---------- GLOBAL STYLE ----------
 st.markdown("""
 <style>
@@ -225,47 +237,46 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-if uploaded_file is None:
-    st.markdown(
-        """
-        <div class="hero-card">
-            <div class="section-pill">Setup</div>
-            <h3 style="margin-top:4px; margin-bottom:6px;">PlayWise Pilot – multi-lens cockpit for sharp bettors</h3>
-            <p style="opacity:0.86; font-size:0.97rem; max-width:560px; line-height:1.6;">
-                Drop a Sportsbook Excel export in the sidebar. We stitch together bankroll physics, rhythm, and risk hygiene
-                so you see the epic throughline: where your edge lives, how fast it compounds, and how disciplined the ride is.
-            </p>
-            <div class="hero-grid">
-                <div class="hero-grid__item">
-                    <span class="hero-label">Format</span>
-                    <span class="hero-value">.xlsx (Veikkaus)</span>
-                </div>
-                <div class="hero-grid__item">
-                    <span class="hero-label">Signal Stack</span>
-                    <span class="hero-value">ROI pulse, profit velocity</span>
-                </div>
-                <div class="hero-grid__item">
-                    <span class="hero-label">Discipline Lens</span>
-                    <span class="hero-value">Singles vs combos, stake pacing</span>
-                </div>
-                <div class="hero-grid__item">
-                    <span class="hero-label">Market Map</span>
-                    <span class="hero-value">Props, totals, lines, 1X2</span>
-                </div>
-            </div>
-            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
-                <div class="data-chip"><span class="data-chip__dot"></span>Edge radar: find pockets with lift</div>
-                <div class="data-chip"><span class="data-chip__dot"></span>Rhythm map: steady vs swingy runs</div>
-                <div class="data-chip"><span class="data-chip__dot"></span>Bankroll armor: drawdown awareness</div>
-            </div>
+hero_html = """
+<div class="hero-card">
+    <div class="section-pill">Setup</div>
+    <h3 style="margin-top:4px; margin-bottom:6px;">PlayWise Pilot – multi-lens cockpit for sharp bettors</h3>
+    <p style="opacity:0.86; font-size:0.97rem; max-width:560px; line-height:1.6;">
+        Drop a Sportsbook Excel export in the sidebar. We stitch together bankroll physics, rhythm, and risk hygiene
+        so you see the epic throughline: where your edge lives, how fast it compounds, and how disciplined the ride is.
+    </p>
+    <div class="hero-grid">
+        <div class="hero-grid__item">
+            <span class="hero-label">Format</span>
+            <span class="hero-value">.xlsx (Veikkaus)</span>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        <div class="hero-grid__item">
+            <span class="hero-label">Signal Stack</span>
+            <span class="hero-value">ROI pulse, profit velocity</span>
+        </div>
+        <div class="hero-grid__item">
+            <span class="hero-label">Discipline Lens</span>
+            <span class="hero-value">Singles vs combos, stake pacing</span>
+        </div>
+        <div class="hero-grid__item">
+            <span class="hero-label">Market Map</span>
+            <span class="hero-value">Props, totals, lines, 1X2</span>
+        </div>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;">
+        <div class="data-chip"><span class="data-chip__dot"></span>Edge radar: find pockets with lift</div>
+        <div class="data-chip"><span class="data-chip__dot"></span>Rhythm map: steady vs swingy runs</div>
+        <div class="data-chip"><span class="data-chip__dot"></span>Bankroll armor: drawdown awareness</div>
+    </div>
+</div>
+"""
+
+if uploaded_file is None:
+    st.markdown(hero_html, unsafe_allow_html=True)
     st.stop()
 
 # ---------- DATA PROCESSING ----------
-df = pd.read_excel(uploaded_file)
+df = safe_read_excel(uploaded_file)
 required_cols = {"date", "rank", "ticket type", "product", "bets", "wins", "odds"}
 
 if not required_cols.issubset(df.columns):
@@ -302,6 +313,11 @@ df_grouped["ROI %"] = np.where(
     (df_grouped["Profit"] / df_grouped["bets"]) * 100,
     0.0,
 )
+
+# short circuit if there's nothing to show, preventing downstream styler errors
+if df_grouped.empty:
+    st.warning("No rows found in the uploaded file. Add bets to see analytics.")
+    st.stop()
 
 # --- ROUND NUMERIC COLUMNS TO 2 DECIMALS ---
 numeric_cols_grouped = df_grouped.select_dtypes(include="number").columns
@@ -487,24 +503,30 @@ with tab1:
 
 with tab2:
     st.markdown("#### Live vs Prematch")
-    num_cols_prod = by_product.select_dtypes(include="number").columns
-    formatter_prod = {col: "{:.2f}" for col in num_cols_prod}
-    st.dataframe(
-        by_product.style
-            .applymap(color_roi, subset=["roi"])
-            .format(formatter_prod),
-        use_container_width=True
-    )
+    if by_product is None or by_product.empty:
+        st.info("No product data to display yet.")
+    else:
+        num_cols_prod = by_product.select_dtypes(include="number").columns
+        formatter_prod = {col: "{:.2f}" for col in num_cols_prod}
+        st.dataframe(
+            by_product.style
+                .applymap(color_roi, subset=["roi"])
+                .format(formatter_prod),
+            use_container_width=True
+        )
 
     st.markdown("#### Combo vs Single")
-    num_cols_ticket = by_ticket.select_dtypes(include="number").columns
-    formatter_ticket = {col: "{:.2f}" for col in num_cols_ticket}
-    st.dataframe(
-        by_ticket.style
-            .applymap(color_roi, subset=["roi"])
-            .format(formatter_ticket),
-        use_container_width=True
-    )
+    if by_ticket is None or by_ticket.empty:
+        st.info("No ticket-type data to display yet.")
+    else:
+        num_cols_ticket = by_ticket.select_dtypes(include="number").columns
+        formatter_ticket = {col: "{:.2f}" for col in num_cols_ticket}
+        st.dataframe(
+            by_ticket.style
+                .applymap(color_roi, subset=["roi"])
+                .format(formatter_ticket),
+            use_container_width=True
+        )
 
 with tab3:
     with st.expander("Ticket-level data (aggregated singles & combos)", expanded=True):
