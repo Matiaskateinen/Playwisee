@@ -236,37 +236,65 @@ st.markdown(
     '<p class="playwise-subtitle">Precision-grade cockpit for disciplined bettors.</p>',
     unsafe_allow_html=True,
 )
-
 if uploaded_file is None:
     st.markdown(
         """
         <div class="hero-card">
-            <div class="section-pill">Setup</div>
-            <h3 style="margin-top:4px; margin-bottom:6px;">Import and get a lab-grade view of your betting</h3>
-            <p style="opacity:0.82; font-size:0.95rem; max-width:520px; line-height:1.55;">
-                Drop a Sportsbook Excel export in the sidebar. PlayWise cleans, aggregates and serves
-                a clinical read on your bankroll movement: ROI, profit velocity, edge pockets and your
-                behavioural profile.
+            <div class="section-pill">
+                <span style="width:8px;height:8px;border-radius:999px;background:var(--accent);box-shadow:0 0 12px rgba(65,240,192,0.8);display:inline-block;"></span>
+                Betting stats, not betting tips
+            </div>
+            <h3 style="
+                margin-top:6px;
+                margin-bottom:10px;
+                font-size:1.35rem;
+                letter-spacing:0.04em;
+                text-transform:uppercase;
+            ">
+                Turn your bet history into a real profile
+            </h3>
+            <p style="
+                opacity:0.9;
+                font-size:0.96rem;
+                max-width:540px;
+                line-height:1.6;
+            ">
+                Upload a sportsbook export on the left and get a clean, tracking-app style view of how
+                you actually bet: volume, ROI, swings and which lanes are doing the heavy lifting.
+                No picks, no hype – just your own numbers.
             </p>
+
             <div class="hero-grid">
                 <div class="hero-grid__item">
-                    <span class="hero-label">Format</span>
-                    <span class="hero-value">.xlsx (Veikkaus)</span>
+                    <span class="hero-label">What you need</span>
+                    <span class="hero-value">Veikkaus .xlsx export</span>
                 </div>
                 <div class="hero-grid__item">
-                    <span class="hero-label">Insights</span>
-                    <span class="hero-value">ROI, profit, markets</span>
+                    <span class="hero-label">What you get</span>
+                    <span class="hero-value">ROI, profit curve, edges</span>
                 </div>
                 <div class="hero-grid__item">
-                    <span class="hero-label">Profile</span>
-                    <span class="hero-value">Singles vs combos</span>
+                    <span class="hero-label">Best use</span>
+                    <span class="hero-value">Shareable stats for your crew</span>
                 </div>
             </div>
+
+            <p style="
+                margin-top:12px;
+                font-size:0.8rem;
+                text-transform:uppercase;
+                letter-spacing:0.12em;
+                color:var(--muted);
+                opacity:0.9;
+            ">
+                Step 1: export from Veikkaus → Step 2: drop file in sidebar → Step 3: scroll down
+            </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
     st.stop()
+
 
 # ---------- DATA PROCESSING ----------
 df = safe_read_excel(uploaded_file)
@@ -568,3 +596,4 @@ with tab3:
             df_grouped.style.format(formatter_grouped),
             use_container_width=True
         )
+
