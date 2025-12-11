@@ -344,15 +344,13 @@ by_market_group = None
 if "market name" in df.columns:
     def classify_market(m):
         m = str(m).lower()
-        if any(k in m for k in ["player","points","pts","rebounds","assists","steals","blocks","shots","goal"]):
-            return "Player props"
-        if any(k in m for k in ["1x2","match result","full time result"]):
-            return "Match result (1X2)"
-        if any(k in m for k in ["moneyline","winner","to win"]):
-            return "Moneyline"
-        if any(k in m for k in ["over","under","total goals","total points"]):
-            return "Totals (over/under)"
-        return "Other markets"
+        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
+            return "Over/Under Goals"
+        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
+            return "Player Points"
+        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
+            return "Match Results"
+        return "Other Markets"
 
     df["market_group"] = df["market name"].apply(classify_market)
 
