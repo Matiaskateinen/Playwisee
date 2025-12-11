@@ -241,6 +241,20 @@ h1 {
     background: radial-gradient(circle, rgba(0, 167, 255, 0.16), transparent 60%);
     filter: blur(10px);
 }
+.timeline-header {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    background: linear-gradient(120deg, rgba(65, 240, 192, 0.08), rgba(0, 167, 255, 0.08));
+    border: 1px solid var(--stroke);
+    border-radius: 16px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    position: relative;
+    z-index: 1;
+}
 .hero-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -563,18 +577,15 @@ range_options = {
 }
 default_range = list(range_options.keys()).index("All Time")
 
-header_cols = st.columns([1, 2])
-with header_cols[0]:
-    st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
-with header_cols[1]:
-    st.caption("Timeline")
-    selected_range = st.radio(
-        "Timeline",
-        list(range_options.keys()),
-        horizontal=True,
-        index=default_range,
-        label_visibility="collapsed",
-    )
+st.markdown("<div class='timeline-header'>", unsafe_allow_html=True)
+selected_range = st.radio(
+    "",
+    list(range_options.keys()),
+    horizontal=True,
+    index=default_range,
+    label_visibility="collapsed",
+)
+st.markdown("</div>", unsafe_allow_html=True)
 
 cutoff = range_options[selected_range]
 if cutoff is not None:
