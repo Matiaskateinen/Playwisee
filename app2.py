@@ -32,9 +32,85 @@ st.markdown("""
     --glow-blue: rgba(0, 157, 255, 0.16);
     --glow-green: rgba(65, 240, 192, 0.22);
 }
-html, body, [class*="css"] {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+* {
+    font-family: 'Navigo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--text);
+    font-display: swap;
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: #e5e7eb;
+}
+*, :before, :after {
+    --tw-border-spacing-x: 0;
+    --tw-border-spacing-y: 0;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-rotate: 0;
+    --tw-skew-x: 0;
+    --tw-skew-y: 0;
+    --tw-scale-x: 1;
+    --tw-scale-y: 1;
+    --tw-pan-x: ;
+    --tw-pan-y: ;
+    --tw-pinch-zoom: ;
+    --tw-scroll-snap-strictness: proximity;
+    --tw-gradient-from-position: ;
+    --tw-gradient-via-position: ;
+    --tw-gradient-to-position: ;
+    --tw-ordinal: ;
+    --tw-slashed-zero: ;
+    --tw-numeric-figure: ;
+    --tw-numeric-spacing: ;
+    --tw-numeric-fraction: ;
+    --tw-ring-inset: ;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-color: rgb(59 130 246 / .5);
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-colored: 0 0 #0000;
+    --tw-blur: ;
+    --tw-brightness: ;
+    --tw-contrast: ;
+    --tw-grayscale: ;
+    --tw-hue-rotate: ;
+    --tw-invert: ;
+    --tw-saturate: ;
+    --tw-sepia: ;
+    --tw-drop-shadow: ;
+    --tw-backdrop-blur: ;
+    --tw-backdrop-brightness: ;
+    --tw-backdrop-contrast: ;
+    --tw-backdrop-grayscale: ;
+    --tw-backdrop-hue-rotate: ;
+    --tw-backdrop-invert: ;
+    --tw-backdrop-opacity: ;
+    --tw-backdrop-saturate: ;
+    --tw-backdrop-sepia: ;
+    --tw-contain-size: ;
+    --tw-contain-layout: ;
+    --tw-contain-paint: ;
+}
+html, body, [class*="css"] {
+    font-family: 'Navigo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text);
+}
+body {
+    background: #04000b;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.5;
+}
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.justify-center { justify-content: center; }
+.items-start { align-items: flex-start; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.full-bleed:not(.no-layout)>:not(.full-bleed) {
+    grid-column: 2;
 }
 .app-wrapper {
     position: relative;
@@ -119,10 +195,100 @@ h1 {
     letter-spacing: 0.04em;
     margin-bottom: 0.15rem;
 }
+.page-wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 14px 0 14px;
+}
+.hero-copy {
+    position: relative;
+    z-index: 2;
+}
+.upload-col {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: linear-gradient(120deg, rgba(65, 240, 192, 0.18), rgba(0, 167, 255, 0.18));
+    color: #9bf6da;
+    border: 1px solid rgba(65, 240, 192, 0.45);
+}
 .playwise-subtitle {
     font-size: 0.97rem;
     color: var(--muted);
     margin-bottom: 0.75rem;
+}
+.hero-headline {
+    font-size: 1.45rem;
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+}
+.hero-description {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.65;
+    max-width: 640px;
+    margin-bottom: 0.6rem;
+}
+.hero-bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+}
+.hero-bullets li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--text);
+}
+.hero-bullets li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+}
+.upload-card {
+    position: relative;
+    background: radial-gradient(120% 160% at 0% 0%, rgba(65, 240, 192, 0.08), rgba(10, 15, 24, 0.9)),
+                radial-gradient(140% 160% at 100% 0%, rgba(0, 167, 255, 0.1), rgba(10, 15, 24, 0.9)),
+                var(--card);
+    border: 1px solid var(--stroke);
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow:
+        0 26px 80px rgba(0,0,0,0.7),
+        0 12px 30px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.upload-card__inner {
+    background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+    border-radius: 14px;
+    padding: 10px 12px 6px 12px;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+.upload-card__title {
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+.upload-card__helper {
+    margin: 0 0 6px 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+.hero-spacer {
+    height: 32px;
 }
 .hero-card {
     position: relative;
@@ -196,16 +362,37 @@ h1 {
     color: var(--text) !important;
     font-weight: 800 !important;
 }
-.stTabs [role="tab"] {
-    padding: 10px 22px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--muted);
-    border-bottom: 2px solid transparent;
+.section-stack {
+    display: grid;
+    gap: 16px;
+    margin-top: 10px;
 }
-.stTabs [role="tab"][aria-selected="true"] {
-    border-bottom: 3px solid var(--accent);
+.section-card {
+    position: relative;
+    background: radial-gradient(120% 160% at 0% 0%, rgba(65, 240, 192, 0.08), rgba(10, 15, 24, 0.92)),
+                radial-gradient(140% 160% at 100% 0%, rgba(0, 167, 255, 0.12), rgba(10, 15, 24, 0.92)),
+                rgba(8, 11, 18, 0.96);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 14px 14px 10px 14px;
+    box-shadow:
+        0 26px 80px rgba(0,0,0,0.7),
+        0 12px 30px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.section-card .stExpander {
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    background: rgba(255,255,255,0.02) !important;
+    border-radius: 14px !important;
+}
+.section-card details summary {
+    font-size: 1.1rem;
+    font-weight: 800;
     color: var(--text);
+}
+.section-card details summary::marker {
+    color: var(--accent);
+    font-size: 1.2rem;
 }
 div[data-testid="dataframe"] {
     border-radius: 14px;
@@ -236,6 +423,38 @@ div[data-testid="dataframe"] {
     background: var(--accent);
     box-shadow: 0 0 10px rgba(65, 240, 192, 0.6);
 }
+.digest-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+.digest-chip {
+    flex: 1 1 200px;
+    min-width: 200px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid var(--stroke);
+    border-radius: 14px;
+    padding: 14px 16px 12px 16px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+}
+.digest-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+.digest-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.digest-value .win { color: var(--accent); }
+.digest-value .loss { color: #ff7b7b; }
 .stExpander {
     border-radius: 12px !important;
     border: 1px solid var(--stroke) !important;
@@ -265,50 +484,48 @@ h3, h4 {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- SIDEBAR ----------
-with st.sidebar:
-    st.markdown("### PLAYWISE")
-    st.caption("Your stats, Your edge")
+st.markdown("<div class='page-wrap'>", unsafe_allow_html=True)
+hero_cols = st.columns([1.05, 0.95])
 
-    uploaded_file = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"])
-
-    st.markdown("---")
-    st.caption("Tip: export from eg. Coolbet, Veikkaus as `.xlsx` and drop it here.")
-
-# ---------- MAIN ----------
-st.title("PlayWise")
-st.markdown(
-    '<p class="playwise-subtitle">Use your strengths, learn from your weaknesses</p>',
-    unsafe_allow_html=True,
-)
-
-if uploaded_file is None:
+with hero_cols[0]:
     st.markdown(
         """
-        <div class="hero-card">
-            <div class="section-pill">Setup</div>
-            <h3 style="margin-top:4px; margin-bottom:6px;">See what’s working — and what’s not</h3>
-            <p style="opacity:0.82; font-size:0.95rem; max-width:520px; line-height:1.55;">
-               Upload your bets and get ROI, profit trends and a profile of how you play.
-            </p>
-            <div class="hero-grid">
-                <div class="hero-grid__item">
-                    <span class="hero-label">Format</span>
-                    <span class="hero-value">.xlsx (eg. Coolbet, Veikkaus)</span>
-                </div>
-                <div class="hero-grid__item">
-                    <span class="hero-label">Insights</span>
-                    <span class="hero-value">ROI, profit, markets</span>
-                </div>
-                <div class="hero-grid__item">
-                    <span class="hero-label">Profile</span>
-                    <span class="hero-value">Strenghts + weaknesses</span>
-                </div>
-            </div>
+        <div class="hero-copy">
+            <div class="hero-pill">PlayWise · pilot build</div>
+            <h1 style="margin-top:6px;">PlayWise</h1>
+            <p class="playwise-subtitle">Use your strengths, learn from your weaknesses.</p>
+            <h3 class="hero-headline">See what’s working — and what’s not</h3>
+            <p class="hero-description">Upload your bets to get ROI, profit trends and a profile of how you play. No tips, no picks — just the stats that show your edge.</p>
+            <ul class="hero-bullets">
+                <li>ROI & profit curve to show momentum</li>
+                <li>Strongest and weakest markets surfaced automatically</li>
+                <li>Single- vs combo-heavy profile at a glance</li>
+            </ul>
         </div>
         """,
         unsafe_allow_html=True,
     )
+
+with hero_cols[1]:
+    st.markdown("<div class='upload-col'>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="upload-card">
+            <div class="upload-card__inner">
+                <div class="upload-card__title">Upload Sportsbook Excel</div>
+                <p class="upload-card__helper">.xlsx export from e.g. Coolbet or Veikkaus.</p>
+        """,
+        unsafe_allow_html=True,
+    )
+    uploaded_file = st.file_uploader("", type=["xlsx"])
+    st.caption("Tip: export your betting history as .xlsx and drop it here.")
+    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
+
+if uploaded_file is None:
     st.stop()
 
 # ---------- DATA PROCESSING ----------
@@ -323,6 +540,19 @@ df["ticket type"] = df["ticket type"].astype(str)
 df["product"] = df["product"].astype(str)
 df["date"] = pd.to_datetime(df["date"].ffill())
 df["rank"] = df["rank"].ffill()
+
+if "market name" in df.columns:
+    def classify_market(m):
+        m = str(m).lower()
+        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
+            return "Over/Under Goals"
+        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
+            return "Player Points"
+        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
+            return "Match Results"
+        return "Other Markets"
+
+    df["market_group"] = df["market name"].apply(classify_market)
 
 df_grouped = (
     df.groupby(["date", "rank", "ticket type", "product"], as_index=False)
@@ -350,23 +580,90 @@ if df_grouped.empty:
 numeric_cols_grouped = df_grouped.select_dtypes(include="number").columns
 df_grouped[numeric_cols_grouped] = df_grouped[numeric_cols_grouped].round(2)
 
-total_stake = float(df_grouped["bets"].sum())
-total_return = float(df_grouped["wins"].sum())
-total_profit = total_return - total_stake
-roi_total = (total_profit / total_stake * 100) if total_stake > 0 else 0.0
-avg_bet = float(df_grouped["bets"].mean())
-num_bets = len(df_grouped)
-num_singles = int((df_grouped["ticket type"].str.lower() == "single").sum())
-num_combos = int((df_grouped["ticket type"].str.lower() == "combo").sum())
+df_filtered = df_grouped.copy()
+df_filtered_raw = df.copy()
 
-total_stake = round(total_stake, 2)
-total_return = round(total_return, 2)
-total_profit = round(total_profit, 2)
-roi_total = round(roi_total, 2)
-avg_bet = round(avg_bet, 2)
+def color_roi(v):
+    if pd.isna(v): return ""
+    return "color: green" if v > 0 else "color: red" if v < 0 else "color: gray"
+
+
+# ---------- HERO OVERVIEW CARD ----------
+st.markdown('<div class="hero-card">', unsafe_allow_html=True)
+st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
+top_cols = st.columns([2, 1.3])
+
+with top_cols[0]:
+    range_options = {
+        "1 Month": pd.DateOffset(months=1),
+        "3 Months": pd.DateOffset(months=3),
+        "6 Months": pd.DateOffset(months=6),
+        "1 Year": pd.DateOffset(years=1),
+        "All Time": None,
+    }
+    default_range = list(range_options.keys()).index("All Time")
+    selected_range = st.radio(
+        "Timeline",
+        list(range_options.keys()),
+        horizontal=True,
+        index=default_range,
+    )
+
+    cutoff = range_options[selected_range]
+    if cutoff is not None:
+        min_date = df_grouped["date"].max() - cutoff
+        df_filtered = df_grouped[df_grouped["date"] >= min_date].copy()
+        df_filtered_raw = df[df["date"] >= min_date].copy()
+    else:
+        df_filtered = df_grouped.copy()
+        df_filtered_raw = df.copy()
+
+    if df_filtered.empty:
+        st.warning("No bets found for this timeline.")
+        st.stop()
+
+    total_stake = float(df_filtered["bets"].sum())
+    total_return = float(df_filtered["wins"].sum())
+    total_profit = total_return - total_stake
+    roi_total = (total_profit / total_stake * 100) if total_stake > 0 else 0.0
+    avg_bet = float(df_filtered["bets"].mean())
+    num_bets = len(df_filtered)
+    num_singles = int((df_filtered["ticket type"].str.lower() == "single").sum())
+    num_combos = int((df_filtered["ticket type"].str.lower() == "combo").sum())
+
+    total_stake = round(total_stake, 2)
+    total_return = round(total_return, 2)
+    total_profit = round(total_profit, 2)
+    roi_total = round(roi_total, 2)
+    avg_bet = round(avg_bet, 2)
+
+    mc1, mc2, mc3, mc4 = st.columns(4)
+    mc1.metric("ROI %", f"{roi_total:.2f}%")
+    mc2.metric("Total Profit", f"{total_profit:.2f} €")
+    mc3.metric("Avg Bet", f"{avg_bet:.2f} €")
+    mc4.metric("Tickets", f"{num_bets} ({num_singles}/{num_combos})")
+
+    st.markdown("##### Profit over time")
+    df_daily = df_filtered.groupby("date", as_index=False)["Profit"].sum().sort_values("date")
+    df_daily["Profit"] = df_daily["Profit"].round(2)
+
+    if not df_daily.empty:
+        df_range = df_daily.copy()
+        if cutoff is not None:
+            min_date = df_daily["date"].max() - cutoff
+            df_range = df_daily[df_daily["date"] >= min_date].copy()
+
+        df_range["CumProfit"] = df_range["Profit"].cumsum().round(2)
+        df_range["Profit"] = df_range["Profit"].round(2)
+
+        chart = alt.Chart(df_range).mark_line().encode(
+            x="date:T",
+            y="CumProfit:Q"
+        )
+        st.altair_chart(chart, use_container_width=True)
 
 by_product = (
-    df_grouped.groupby("product")
+    df_filtered.groupby("product")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
     .assign(
         profit=lambda x: x["ret"] - x["stake"],
@@ -375,7 +672,7 @@ by_product = (
 )
 
 by_ticket = (
-    df_grouped.groupby("ticket type")
+    df_filtered.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
     .assign(
         profit=lambda x: x["ret"] - x["stake"],
@@ -384,21 +681,9 @@ by_ticket = (
 )
 
 by_market_group = None
-if "market name" in df.columns:
-    def classify_market(m):
-        m = str(m).lower()
-        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
-            return "Over/Under Goals"
-        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
-            return "Player Points"
-        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
-            return "Match Results"
-        return "Other Markets"
-
-    df["market_group"] = df["market name"].apply(classify_market)
-
+if "market_group" in df_filtered_raw.columns:
     by_market_group = (
-        df.groupby("market_group")
+        df_filtered_raw.groupby("market_group")
         .agg(stake=("bets","sum"), ret=("wins","sum"))
         .assign(
             profit=lambda x: x["ret"] - x["stake"],
@@ -417,62 +702,9 @@ if by_market_group is not None:
     by_market_num_cols = by_market_group.select_dtypes(include="number").columns
     by_market_group[by_market_num_cols] = by_market_group[by_market_num_cols].round(2)
 
-def color_roi(v):
-    if pd.isna(v): return ""
-    return "color: green" if v > 0 else "color: red" if v < 0 else "color: gray"
-
-
-# ---------- HERO OVERVIEW CARD ----------
-st.markdown('<div class="hero-card">', unsafe_allow_html=True)
-st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
-top_cols = st.columns([2, 1.3])
-
-with top_cols[0]:
-    mc1, mc2, mc3, mc4 = st.columns(4)
-    mc1.metric("ROI %", f"{roi_total:.2f}%")
-    mc2.metric("Total Profit", f"{total_profit:.2f} €")
-    mc3.metric("Avg Bet", f"{avg_bet:.2f} €")
-    mc4.metric("Tickets", f"{num_bets} ({num_singles}/{num_combos})")
-
-    st.markdown("##### Profit over time")
-    df_daily = df_grouped.groupby("date", as_index=False)["Profit"].sum().sort_values("date")
-    df_daily["Profit"] = df_daily["Profit"].round(2)
-
-    range_options = {
-        "1 Month": pd.DateOffset(months=1),
-        "3 Months": pd.DateOffset(months=3),
-        "6 Months": pd.DateOffset(months=6),
-        "1 Year": pd.DateOffset(years=1),
-        "All Time": None,
-    }
-    default_range = list(range_options.keys()).index("All Time")
-    selected_range = st.radio(
-        "Timeline",
-        list(range_options.keys()),
-        horizontal=True,
-        index=default_range,
-    )
-
-    if not df_daily.empty:
-        cutoff = range_options[selected_range]
-        if cutoff is not None:
-            min_date = df_daily["date"].max() - cutoff
-            df_range = df_daily[df_daily["date"] >= min_date].copy()
-        else:
-            df_range = df_daily.copy()
-
-        df_range["CumProfit"] = df_range["Profit"].cumsum().round(2)
-        df_range["Profit"] = df_range["Profit"].round(2)
-
-        chart = alt.Chart(df_range).mark_line().encode(
-            x="date:T",
-            y="CumProfit:Q"
-        )
-        st.altair_chart(chart, use_container_width=True)
-
 with top_cols[1]:
     st.markdown("##### Quick profile")
-    avg_legs = df_grouped["legs"].mean()
+    avg_legs = df_filtered["legs"].mean()
 
     if avg_legs > 1.5:
         st.write("🎲 You lean **combo-heavy** → higher variance, bigger swings.")
@@ -496,9 +728,10 @@ st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 
 
 # ---------- QUICK DIGEST ----------
-date_start = df_grouped["date"].min()
-date_end = df_grouped["date"].max()
-unique_products = df_grouped["product"].nunique()
+date_start = df_filtered["date"].min()
+date_end = df_filtered["date"].max()
+win_rate = round((df_filtered["wins"] > 0).mean() * 100, 1)
+loss_rate = round(100 - win_rate, 1)
 
 digest_cols = st.columns([1.4, 1])
 
@@ -506,26 +739,28 @@ with digest_cols[0]:
     st.markdown("#### Session digest")
     st.markdown(
         """
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
-            <div class="data-chip"><span class="data-chip__dot"></span>Rows: <strong>{rows}</strong></div>
-            <div class="data-chip"><span class="data-chip__dot"></span>Products: <strong>{products}</strong></div>
-            <div class="data-chip"><span class="data-chip__dot"></span>Period: <strong>{start} → {end}</strong></div>
+        <div class="digest-row">
+            <div class="digest-chip">
+                <div class="digest-label">Bets</div>
+                <div class="digest-value">{rows}</div>
+            </div>
+            <div class="digest-chip">
+                <div class="digest-label">Period</div>
+                <div class="digest-value">{start} → {end}</div>
+            </div>
+            <div class="digest-chip">
+                <div class="digest-label">Win / Loss</div>
+                <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
+            </div>
         </div>
         """.format(
-            rows=len(df_grouped),
-            products=unique_products,
+            rows=len(df_filtered),
             start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
             end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
+            win=win_rate,
+            loss=loss_rate,
         ),
         unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        - **Volume**: Keeps every ticket aggregated, no dilution between singles and combos.
-        - **ROIs**: Rounded to 2 decimals for clinical readability.
-        - **Markets**: Auto-bucketed by props, totals, lines and 1X2 where present.
-        """
     )
 
 with digest_cols[1]:
@@ -539,12 +774,13 @@ with digest_cols[1]:
     st.write(f"🧮 Mean stake per ticket: **{avg_bet:.2f} €**")
 
 
-# ---------- TABS ----------
+# ---------- INTERACTIVE SECTIONS ----------
 
-st.markdown("")
-tab1, tab2, tab3 = st.tabs(["📊 Markets", "🎟 Tickets", "📄 Raw Data"])
+st.markdown("### Deep dives")
+st.markdown("<div class='section-stack'>", unsafe_allow_html=True)
 
-with tab1:
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+with st.expander("📊 Markets — click to open full view", expanded=False):
     st.markdown("#### Profitability By Market Group")
     if by_market_group is not None and not by_market_group.empty:
         display_by_market = by_market_group.copy()
@@ -566,8 +802,10 @@ with tab1:
         )
     else:
         st.info("No market data found in this file (missing 'market name').")
+st.markdown("</div>", unsafe_allow_html=True)
 
-with tab2:
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+with st.expander("🎟 Tickets — click to open full view", expanded=False):
     st.markdown("#### Live Vs Prematch")
     display_by_product = by_product.copy()
     display_by_product.index = display_by_product.index.str.title()
@@ -605,28 +843,32 @@ with tab2:
             .format(formatter_ticket),
         use_container_width=True
     )
+st.markdown("</div>", unsafe_allow_html=True)
 
-with tab3:
-    with st.expander("Ticket-Level Data (Aggregated Singles & Combos)", expanded=True):
-        display_grouped = df_grouped.copy()
-        display_grouped = display_grouped.rename(
-            columns={
-                "date": "Date",
-                "rank": "Rank",
-                "ticket type": "Ticket Type",
-                "product": "Product",
-                "bets": "Bets",
-                "wins": "Wins",
-                "total_odds": "Total Odds",
-                "legs": "Legs",
-            }
-        )
-        num_cols_grouped = display_grouped.select_dtypes(include="number").columns
-        formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
-        st.dataframe(
-            display_grouped.style.format(formatter_grouped),
-            use_container_width=True
-        )
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+with st.expander("📄 Raw Data — click to open full view", expanded=False):
+    display_grouped = df_grouped.copy()
+    display_grouped = display_grouped.rename(
+        columns={
+            "date": "Date",
+            "rank": "Rank",
+            "ticket type": "Ticket Type",
+            "product": "Product",
+            "bets": "Bets",
+            "wins": "Wins",
+            "total_odds": "Total Odds",
+            "legs": "Legs",
+        }
+    )
+    num_cols_grouped = display_grouped.select_dtypes(include="number").columns
+    formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
+    st.dataframe(
+        display_grouped.style.format(formatter_grouped),
+        use_container_width=True
+    )
+st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 
 
