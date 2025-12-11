@@ -242,16 +242,14 @@ if uploaded_file is None:
         """
         <div class="hero-card">
             <div class="section-pill">Setup</div>
-            <h3 style="margin-top:4px; margin-bottom:6px;">Import and get a lab-grade view of your betting</h3>
+            <h3 style="margin-top:4px; margin-bottom:6px;">See what’s working — and what’s not</h3>
             <p style="opacity:0.82; font-size:0.95rem; max-width:520px; line-height:1.55;">
-                Drop a Sportsbook Excel export in the sidebar. PlayWise cleans, aggregates and serves
-                a clinical read on your bankroll movement: ROI, profit velocity, edge pockets and your
-                behavioural profile.
+               Upload your bets and get ROI, profit trends and a profile of how you play.
             </p>
             <div class="hero-grid">
                 <div class="hero-grid__item">
                     <span class="hero-label">Format</span>
-                    <span class="hero-value">.xlsx (Coolbet)</span>
+                    <span class="hero-value">.xlsx (eg. Coolbet, Veikkaus)</span>
                 </div>
                 <div class="hero-grid__item">
                     <span class="hero-label">Insights</span>
@@ -259,7 +257,7 @@ if uploaded_file is None:
                 </div>
                 <div class="hero-grid__item">
                     <span class="hero-label">Profile</span>
-                    <span class="hero-value">Singles vs combos</span>
+                    <span class="hero-value">Strenghts + weaknesses</span>
                 </div>
             </div>
         </div>
@@ -584,4 +582,5 @@ with tab3:
             display_grouped.style.format(formatter_grouped),
             use_container_width=True
         )
+
 
