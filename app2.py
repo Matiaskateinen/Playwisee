@@ -291,15 +291,6 @@ df_grouped = (
       )
 )
 
-df_grouped["combo_label"] = df_grouped.apply(
-    lambda row: (
-        f"combo {row['date'].strftime('%d/%m')}"
-        if (row["ticket type"].lower().startswith("combo") and pd.notna(row["date"]))
-        else ""
-    ),
-    axis=1
-)
-
 df_grouped["Profit"] = df_grouped["wins"] - df_grouped["bets"]
 df_grouped["ROI %"] = np.where(
     df_grouped["bets"] > 0,
@@ -334,13 +325,19 @@ avg_bet = round(avg_bet, 2)
 by_product = (
     df_grouped.groupby("product")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
-    .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
+    .assign(
+        profit=lambda x: x["ret"] - x["stake"],
+        roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0)
+    )
 )
 
 by_ticket = (
     df_grouped.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
-    .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
+    .assign(
+        profit=lambda x: x["ret"] - x["stake"],
+        roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0)
+    )
 )
 
 by_market_group = None
@@ -362,7 +359,10 @@ if "market name" in df.columns:
     by_market_group = (
         df.groupby("market_group")
         .agg(stake=("bets","sum"), ret=("wins","sum"))
-        .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
+        .assign(
+            profit=lambda x: x["ret"] - x["stake"],
+            roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0)
+        )
         .sort_values("roi", ascending=False)
     )
 
@@ -477,16 +477,25 @@ with digest_cols[1]:
 
 # ---------- TABS ----------
 st.markdown("")
-tab1, tab2, tab3 = st.tabs(["📊 Markets", "🎟 Tickets", "📄 Raw data"])
+tab1, tab2, tab3 = st.tabs(["📊 Markets", "🎟 Tickets", "📄 Raw Data"])
 
 with tab1:
-    st.markdown("#### Profitability by market group")
+    st.markdown("#### Profitability By Market Group")
     if by_market_group is not None and not by_market_group.empty:
-        num_cols_market = by_market_group.select_dtypes(include="number").columns
-        formatter_market = {col: "{:.2f}" for col in num_cols_market}
+        display_by_market = by_market_group.copy()
+        display_by_market.index = display_by_market.index.str.title()
+        display_by_market = display_by_market.rename(
+            columns={
+                "stake": "Stake",
+                "ret": "Return",
+                "profit": "Profit",
+                "roi": "ROI %",
+            }
+        )[ ["Stake", "Return", "Profit", "ROI %"] ]
+        formatter_market = {col: "{:.2f}" for col in display_by_market.select_dtypes(include="number").columns}
         st.dataframe(
-            by_market_group.style
-                .applymap(color_roi, subset=["roi"])
+            display_by_market.style
+                .applymap(color_roi, subset=["ROI %"])
                 .format(formatter_market),
             use_container_width=True
         )
@@ -494,31 +503,62 @@ with tab1:
         st.info("No market data found in this file (missing 'market name').")
 
 with tab2:
-    st.markdown("#### Live vs Prematch")
-    num_cols_prod = by_product.select_dtypes(include="number").columns
-    formatter_prod = {col: "{:.2f}" for col in num_cols_prod}
+    st.markdown("#### Live Vs Prematch")
+    display_by_product = by_product.copy()
+    display_by_product.index = display_by_product.index.str.title()
+    display_by_product = display_by_product.rename(
+        columns={
+            "stake": "Stake",
+            "ret": "Return",
+            "profit": "Profit",
+            "roi": "ROI %",
+        }
+    )[ ["Stake", "Return", "Profit", "ROI %"] ]
+    formatter_prod = {col: "{:.2f}" for col in display_by_product.select_dtypes(include="number").columns}
     st.dataframe(
-        by_product.style
-            .applymap(color_roi, subset=["roi"])
+        display_by_product.style
+            .applymap(color_roi, subset=["ROI %"])
             .format(formatter_prod),
         use_container_width=True
     )
 
-    st.markdown("#### Combo vs Single")
-    num_cols_ticket = by_ticket.select_dtypes(include="number").columns
-    formatter_ticket = {col: "{:.2f}" for col in num_cols_ticket}
+    st.markdown("#### Combo Vs Single")
+    display_by_ticket = by_ticket.copy()
+    display_by_ticket.index = display_by_ticket.index.str.title()
+    display_by_ticket = display_by_ticket.rename(
+        columns={
+            "stake": "Stake",
+            "ret": "Return",
+            "profit": "Profit",
+            "roi": "ROI %",
+        }
+    )[ ["Stake", "Return", "Profit", "ROI %"] ]
+    formatter_ticket = {col: "{:.2f}" for col in display_by_ticket.select_dtypes(include="number").columns}
     st.dataframe(
-        by_ticket.style
-            .applymap(color_roi, subset=["roi"])
+        display_by_ticket.style
+            .applymap(color_roi, subset=["ROI %"])
             .format(formatter_ticket),
         use_container_width=True
     )
 
 with tab3:
-    with st.expander("Ticket-level data (aggregated singles & combos)", expanded=True):
-        num_cols_grouped = df_grouped.select_dtypes(include="number").columns
+    with st.expander("Ticket-Level Data (Aggregated Singles & Combos)", expanded=True):
+        display_grouped = df_grouped.copy()
+        display_grouped = display_grouped.rename(
+            columns={
+                "date": "Date",
+                "rank": "Rank",
+                "ticket type": "Ticket Type",
+                "product": "Product",
+                "bets": "Bets",
+                "wins": "Wins",
+                "total_odds": "Total Odds",
+                "legs": "Legs",
+            }
+        )
+        num_cols_grouped = display_grouped.select_dtypes(include="number").columns
         formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
         st.dataframe(
-            df_grouped.style.format(formatter_grouped),
+            display_grouped.style.format(formatter_grouped),
             use_container_width=True
         )
