@@ -553,53 +553,60 @@ def color_roi(v):
 
 # ---------- HERO OVERVIEW CARD ----------
 st.markdown('<div class="hero-card">', unsafe_allow_html=True)
-st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
-top_cols = st.columns([2, 1.3])
 
-with top_cols[0]:
-    range_options = {
-        "1 Month": pd.DateOffset(months=1),
-        "3 Months": pd.DateOffset(months=3),
-        "6 Months": pd.DateOffset(months=6),
-        "1 Year": pd.DateOffset(years=1),
-        "All Time": None,
-    }
-    default_range = list(range_options.keys()).index("All Time")
+range_options = {
+    "1 Month": pd.DateOffset(months=1),
+    "3 Months": pd.DateOffset(months=3),
+    "6 Months": pd.DateOffset(months=6),
+    "1 Year": pd.DateOffset(years=1),
+    "All Time": None,
+}
+default_range = list(range_options.keys()).index("All Time")
+
+header_cols = st.columns([1, 2])
+with header_cols[0]:
+    st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
+with header_cols[1]:
+    st.caption("Timeline")
     selected_range = st.radio(
         "Timeline",
         list(range_options.keys()),
         horizontal=True,
         index=default_range,
+        label_visibility="collapsed",
     )
 
-    cutoff = range_options[selected_range]
-    if cutoff is not None:
-        min_date = df_grouped["date"].max() - cutoff
-        df_filtered = df_grouped[df_grouped["date"] >= min_date].copy()
-        df_filtered_raw = df[df["date"] >= min_date].copy()
-    else:
-        df_filtered = df_grouped.copy()
-        df_filtered_raw = df.copy()
+cutoff = range_options[selected_range]
+if cutoff is not None:
+    min_date = df_grouped["date"].max() - cutoff
+    df_filtered = df_grouped[df_grouped["date"] >= min_date].copy()
+    df_filtered_raw = df[df["date"] >= min_date].copy()
+else:
+    df_filtered = df_grouped.copy()
+    df_filtered_raw = df.copy()
 
-    if df_filtered.empty:
-        st.warning("No bets found for this timeline.")
-        st.stop()
+if df_filtered.empty:
+    st.warning("No bets found for this timeline.")
+    st.stop()
 
-    total_stake = float(df_filtered["bets"].sum())
-    total_return = float(df_filtered["wins"].sum())
-    total_profit = total_return - total_stake
-    roi_total = (total_profit / total_stake * 100) if total_stake > 0 else 0.0
-    avg_bet = float(df_filtered["bets"].mean())
-    num_bets = len(df_filtered)
-    num_singles = int((df_filtered["ticket type"].str.lower() == "single").sum())
-    num_combos = int((df_filtered["ticket type"].str.lower() == "combo").sum())
+total_stake = float(df_filtered["bets"].sum())
+total_return = float(df_filtered["wins"].sum())
+total_profit = total_return - total_stake
+roi_total = (total_profit / total_stake * 100) if total_stake > 0 else 0.0
+avg_bet = float(df_filtered["bets"].mean())
+num_bets = len(df_filtered)
+num_singles = int((df_filtered["ticket type"].str.lower() == "single").sum())
+num_combos = int((df_filtered["ticket type"].str.lower() == "combo").sum())
 
-    total_stake = round(total_stake, 2)
-    total_return = round(total_return, 2)
-    total_profit = round(total_profit, 2)
-    roi_total = round(roi_total, 2)
-    avg_bet = round(avg_bet, 2)
+total_stake = round(total_stake, 2)
+total_return = round(total_return, 2)
+total_profit = round(total_profit, 2)
+roi_total = round(roi_total, 2)
+avg_bet = round(avg_bet, 2)
 
+top_cols = st.columns([2, 1.3])
+
+with top_cols[0]:
     mc1, mc2, mc3, mc4 = st.columns(4)
     mc1.metric("ROI %", f"{roi_total:.2f}%")
     mc2.metric("Total Profit", f"{total_profit:.2f} €")
