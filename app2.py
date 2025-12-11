@@ -32,85 +32,9 @@ st.markdown("""
     --glow-blue: rgba(0, 157, 255, 0.16);
     --glow-green: rgba(65, 240, 192, 0.22);
 }
-* {
-    font-family: 'Navigo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    color: var(--text);
-    font-display: swap;
-    box-sizing: border-box;
-    border-width: 0;
-    border-style: solid;
-    border-color: #e5e7eb;
-}
-*, :before, :after {
-    --tw-border-spacing-x: 0;
-    --tw-border-spacing-y: 0;
-    --tw-translate-x: 0;
-    --tw-translate-y: 0;
-    --tw-rotate: 0;
-    --tw-skew-x: 0;
-    --tw-skew-y: 0;
-    --tw-scale-x: 1;
-    --tw-scale-y: 1;
-    --tw-pan-x: ;
-    --tw-pan-y: ;
-    --tw-pinch-zoom: ;
-    --tw-scroll-snap-strictness: proximity;
-    --tw-gradient-from-position: ;
-    --tw-gradient-via-position: ;
-    --tw-gradient-to-position: ;
-    --tw-ordinal: ;
-    --tw-slashed-zero: ;
-    --tw-numeric-figure: ;
-    --tw-numeric-spacing: ;
-    --tw-numeric-fraction: ;
-    --tw-ring-inset: ;
-    --tw-ring-offset-width: 0px;
-    --tw-ring-offset-color: #fff;
-    --tw-ring-color: rgb(59 130 246 / .5);
-    --tw-ring-offset-shadow: 0 0 #0000;
-    --tw-ring-shadow: 0 0 #0000;
-    --tw-shadow: 0 0 #0000;
-    --tw-shadow-colored: 0 0 #0000;
-    --tw-blur: ;
-    --tw-brightness: ;
-    --tw-contrast: ;
-    --tw-grayscale: ;
-    --tw-hue-rotate: ;
-    --tw-invert: ;
-    --tw-saturate: ;
-    --tw-sepia: ;
-    --tw-drop-shadow: ;
-    --tw-backdrop-blur: ;
-    --tw-backdrop-brightness: ;
-    --tw-backdrop-contrast: ;
-    --tw-backdrop-grayscale: ;
-    --tw-backdrop-hue-rotate: ;
-    --tw-backdrop-invert: ;
-    --tw-backdrop-opacity: ;
-    --tw-backdrop-saturate: ;
-    --tw-backdrop-sepia: ;
-    --tw-contain-size: ;
-    --tw-contain-layout: ;
-    --tw-contain-paint: ;
-}
 html, body, [class*="css"] {
-    font-family: 'Navigo', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--text);
-}
-body {
-    background: #04000b;
-    color: var(--text);
-    margin: 0;
-    line-height: 1.5;
-}
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.justify-center { justify-content: center; }
-.items-start { align-items: flex-start; }
-.w-full { width: 100%; }
-.h-full { height: 100%; }
-.full-bleed:not(.no-layout)>:not(.full-bleed) {
-    grid-column: 2;
 }
 .app-wrapper {
     position: relative;
@@ -455,51 +379,6 @@ div[data-testid="dataframe"] {
 }
 .digest-value .win { color: var(--accent); }
 .digest-value .loss { color: #ff7b7b; }
-.timeline-box {
-    margin-top: 6px;
-    padding: 14px 16px 12px 16px;
-    background: linear-gradient(150deg, rgba(65, 240, 192, 0.12), rgba(0, 167, 255, 0.08)),
-                rgba(12, 16, 26, 0.9);
-    border: 1px solid var(--stroke);
-    border-radius: 16px;
-    box-shadow:
-        0 20px 60px rgba(0,0,0,0.6),
-        0 10px 24px rgba(0,0,0,0.45),
-        inset 0 1px 0 rgba(255,255,255,0.03);
-}
-.timeline-label {
-    font-size: 0.82rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 8px;
-}
-.timeline-options [role="radiogroup"] {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-.timeline-options label {
-    padding: 10px 14px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
-    transition: border 120ms ease, box-shadow 120ms ease, transform 120ms ease;
-}
-.timeline-options label:hover {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px rgba(65, 240, 192, 0.25);
-    transform: translateY(-1px);
-}
-.timeline-options label div[aria-checked="true"],
-.timeline-options input:checked + div,
-.timeline-options label:has(input:checked) {
-    color: var(--text);
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px rgba(65, 240, 192, 0.35), 0 10px 24px rgba(0,0,0,0.35);
-    background: linear-gradient(145deg, rgba(65,240,192,0.14), rgba(0,167,255,0.08));
-}
 .stExpander {
     border-radius: 12px !important;
     border: 1px solid var(--stroke) !important;
@@ -599,6 +478,45 @@ if "market name" in df.columns:
 
     df["market_group"] = df["market name"].apply(classify_market)
 
+if "market name" in df.columns:
+    def classify_market(m):
+        m = str(m).lower()
+        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
+            return "Over/Under Goals"
+        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
+            return "Player Points"
+        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
+            return "Match Results"
+        return "Other Markets"
+
+    df["market_group"] = df["market name"].apply(classify_market)
+
+if "market name" in df.columns:
+    def classify_market(m):
+        m = str(m).lower()
+        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
+            return "Over/Under Goals"
+        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
+            return "Player Points"
+        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
+            return "Match Results"
+        return "Other Markets"
+
+    df["market_group"] = df["market name"].apply(classify_market)
+
+if "market name" in df.columns:
+    def classify_market(m):
+        m = str(m).lower()
+        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
+            return "Over/Under Goals"
+        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
+            return "Player Points"
+        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
+            return "Match Results"
+        return "Other Markets"
+
+    df["market_group"] = df["market name"].apply(classify_market)
+
 df_grouped = (
     df.groupby(["date", "rank", "ticket type", "product"], as_index=False)
       .agg(
@@ -647,17 +565,12 @@ with top_cols[0]:
         "All Time": None,
     }
     default_range = list(range_options.keys()).index("All Time")
-    st.markdown("<div class='timeline-box'>", unsafe_allow_html=True)
-    st.markdown("<div class='timeline-label'>Timeline</div>", unsafe_allow_html=True)
-    st.markdown("<div class='timeline-options'>", unsafe_allow_html=True)
     selected_range = st.radio(
-        "",
+        "Timeline",
         list(range_options.keys()),
         horizontal=True,
         index=default_range,
-        key="timeline_range",
     )
-    st.markdown("</div></div>", unsafe_allow_html=True)
 
     cutoff = range_options[selected_range]
     if cutoff is not None:
@@ -777,10 +690,10 @@ with top_cols[1]:
 st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 
 
-# ---------- QUICK DIGEST (TIMELINE-AWARE) ----------
-date_start = df_filtered_raw["date"].min()
-date_end = df_filtered_raw["date"].max()
-win_rate = round((df_filtered_raw["wins"] > 0).mean() * 100, 1)
+# ---------- QUICK DIGEST ----------
+date_start = df_grouped["date"].min()
+date_end = df_grouped["date"].max()
+win_rate = round((df_grouped["wins"] > 0).mean() * 100, 1)
 loss_rate = round(100 - win_rate, 1)
 
 digest_cols = st.columns([1.4, 1])
@@ -804,7 +717,7 @@ with digest_cols[0]:
             </div>
         </div>
         """.format(
-            rows=len(df_filtered_raw),
+            rows=len(df_grouped),
             start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
             end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
             win=win_rate,
