@@ -393,12 +393,35 @@ with top_cols[0]:
 
     st.markdown("##### Profit over time")
     df_daily = df_grouped.groupby("date", as_index=False)["Profit"].sum().sort_values("date")
-    df_daily["CumProfit"] = df_daily["Profit"].cumsum()
     df_daily["Profit"] = df_daily["Profit"].round(2)
-    df_daily["CumProfit"] = df_daily["CumProfit"].round(2)
+
+    range_options = {
+        "1 Month": pd.DateOffset(months=1),
+        "3 Months": pd.DateOffset(months=3),
+        "6 Months": pd.DateOffset(months=6),
+        "1 Year": pd.DateOffset(years=1),
+        "All Time": None,
+    }
+    default_range = list(range_options.keys()).index("All Time")
+    selected_range = st.radio(
+        "Timeline",
+        list(range_options.keys()),
+        horizontal=True,
+        index=default_range,
+    )
 
     if not df_daily.empty:
-        chart = alt.Chart(df_daily).mark_line().encode(
+        cutoff = range_options[selected_range]
+        if cutoff is not None:
+            min_date = df_daily["date"].max() - cutoff
+            df_range = df_daily[df_daily["date"] >= min_date].copy()
+        else:
+            df_range = df_daily.copy()
+
+        df_range["CumProfit"] = df_range["Profit"].cumsum().round(2)
+        df_range["Profit"] = df_range["Profit"].round(2)
+
+        chart = alt.Chart(df_range).mark_line().encode(
             x="date:T",
             y="CumProfit:Q"
         )
