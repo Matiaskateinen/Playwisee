@@ -423,25 +423,6 @@ if by_market_group is not None:
         num_cols_ou = over_under_breakdown.select_dtypes(include="number").columns
         over_under_breakdown[num_cols_ou] = over_under_breakdown[num_cols_ou].round(2)
 
-        goal_totals_mask = totals_mask & df["market name"].str.contains("goal", case=False, na=False)
-        if goal_totals_mask.any():
-            goal_total_breakdown = (
-                df.loc[goal_totals_mask]
-                .groupby("market name")
-                .agg(stake=("bets", "sum"), ret=("wins", "sum"))
-                .assign(
-                    tickets=df.loc[goal_totals_mask].groupby("market name")["bets"].count(),
-                    roi=lambda x: np.where(
-                        x["stake"] > 0,
-                        (x["ret"] - x["stake"]) / x["stake"] * 100,
-                        0.0,
-                    ),
-                )
-                .sort_values("roi", ascending=False)
-            )
-            num_cols_goal = goal_total_breakdown.select_dtypes(include="number").columns
-            goal_total_breakdown[num_cols_goal] = goal_total_breakdown[num_cols_goal].round(2)
-
 def color_roi(v):
     if pd.isna(v): return ""
     return "color: green" if v > 0 else "color: red" if v < 0 else "color: gray"
@@ -580,6 +561,51 @@ with tab1:
                 .format(formatter_goal),
             use_container_width=True
         )
+    if by_product is not None and not by_product.empty:
+        st.markdown("#### ROI by product")
+        product_chart_df = by_product.reset_index().rename(columns={"index": "product"})
+        roi_bar = (
+            alt.Chart(product_chart_df)
+            .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
+            .encode(
+                x=alt.X("product:N", sort="-y", title="Product"),
+                y=alt.Y("roi:Q", title="ROI %"),
+                color=alt.Color(
+                    "roi:Q",
+                    title="ROI %",
+                    legend=None,
+                ),
+                tooltip=[
+                    alt.Tooltip("product:N", title="Product"),
+                    alt.Tooltip("roi:Q", title="ROI %", format=".2f"),
+                    alt.Tooltip("stake:Q", title="Stake", format=".2f"),
+                    alt.Tooltip("ret:Q", title="Return", format=".2f"),
+                ],
+            )
+            .properties(height=320)
+        )
+
+        roi_labels = (
+            alt.Chart(product_chart_df)
+            .mark_text(fontWeight="bold", dx=8, dy=-1, color="#e8edf4")
+            .encode(
+                x=alt.X("product:N", sort="-y"),
+                y=alt.Y("roi:Q"),
+                text=alt.Text("roi:Q", format="+.1f"),
+                color=alt.condition("datum.roi >= 0", alt.value("#baf7e4"), alt.value("#ffb2b2")),
+            )
+        )
+
+        zero_line = alt.Chart(product_chart_df).mark_rule(color="#263040", strokeDash=[4, 4]).encode(y=alt.datum(0))
+
+        roi_chart = (
+            (roi_bar + roi_labels + zero_line)
+            .configure_axis(grid=False, labelColor="#e8edf4", titleColor="#e8edf4")
+            .configure_view(strokeOpacity=0)
+            .configure_legend(labelColor="#e8edf4", titleColor="#e8edf4")
+        )
+
+        st.altair_chart(roi_chart, use_container_width=True)
 
 with tab2:
     st.markdown("#### Live vs Prematch")
