@@ -552,11 +552,11 @@ with top_cols[0]:
         "All Time": None,
     }
     default_range = list(range_options.keys()).index("All Time")
-    selected_range = st.radio(
-        " ",
+    selected_range = st.selectbox(
+        "Timeline range",
         list(range_options.keys()),
-        horizontal=True,
         index=default_range,
+        label_visibility="collapsed",
     )
 
     cutoff = range_options[selected_range]
