@@ -286,16 +286,37 @@ h1 {
     color: var(--text) !important;
     font-weight: 800 !important;
 }
-.stTabs [role="tab"] {
-    padding: 10px 22px;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--muted);
-    border-bottom: 2px solid transparent;
+.section-stack {
+    display: grid;
+    gap: 16px;
+    margin-top: 10px;
 }
-.stTabs [role="tab"][aria-selected="true"] {
-    border-bottom: 3px solid var(--accent);
+.section-card {
+    position: relative;
+    background: radial-gradient(120% 160% at 0% 0%, rgba(65, 240, 192, 0.08), rgba(10, 15, 24, 0.92)),
+                radial-gradient(140% 160% at 100% 0%, rgba(0, 167, 255, 0.12), rgba(10, 15, 24, 0.92)),
+                rgba(8, 11, 18, 0.96);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 14px 14px 10px 14px;
+    box-shadow:
+        0 26px 80px rgba(0,0,0,0.7),
+        0 12px 30px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.section-card .stExpander {
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    background: rgba(255,255,255,0.02) !important;
+    border-radius: 14px !important;
+}
+.section-card details summary {
+    font-size: 1.1rem;
+    font-weight: 800;
     color: var(--text);
+}
+.section-card details summary::marker {
+    color: var(--accent);
+    font-size: 1.2rem;
 }
 div[data-testid="dataframe"] {
     border-radius: 14px;
@@ -443,6 +464,19 @@ df["ticket type"] = df["ticket type"].astype(str)
 df["product"] = df["product"].astype(str)
 df["date"] = pd.to_datetime(df["date"].ffill())
 df["rank"] = df["rank"].ffill()
+
+if "market name" in df.columns:
+    def classify_market(m):
+        m = str(m).lower()
+        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
+            return "Over/Under Goals"
+        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
+            return "Player Points"
+        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
+            return "Match Results"
+        return "Other Markets"
+
+    df["market_group"] = df["market name"].apply(classify_market)
 
 if "market name" in df.columns:
     def classify_market(m):
@@ -690,12 +724,13 @@ with digest_cols[1]:
     st.write(f"🧮 Mean stake per ticket: **{avg_bet:.2f} €**")
 
 
-# ---------- TABS ----------
+# ---------- INTERACTIVE SECTIONS ----------
 
-st.markdown("")
-tab1, tab2, tab3 = st.tabs(["📊 Markets", "🎟 Tickets", "📄 Raw Data"])
+st.markdown("### Deep dives")
+st.markdown("<div class='section-stack'>", unsafe_allow_html=True)
 
-with tab1:
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+with st.expander("📊 Markets — click to open full view", expanded=False):
     st.markdown("#### Profitability By Market Group")
     if by_market_group is not None and not by_market_group.empty:
         display_by_market = by_market_group.copy()
@@ -717,8 +752,10 @@ with tab1:
         )
     else:
         st.info("No market data found in this file (missing 'market name').")
+st.markdown("</div>", unsafe_allow_html=True)
 
-with tab2:
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+with st.expander("🎟 Tickets — click to open full view", expanded=False):
     st.markdown("#### Live Vs Prematch")
     display_by_product = by_product.copy()
     display_by_product.index = display_by_product.index.str.title()
@@ -756,28 +793,32 @@ with tab2:
             .format(formatter_ticket),
         use_container_width=True
     )
+st.markdown("</div>", unsafe_allow_html=True)
 
-with tab3:
-    with st.expander("Ticket-Level Data (Aggregated Singles & Combos)", expanded=True):
-        display_grouped = df_grouped.copy()
-        display_grouped = display_grouped.rename(
-            columns={
-                "date": "Date",
-                "rank": "Rank",
-                "ticket type": "Ticket Type",
-                "product": "Product",
-                "bets": "Bets",
-                "wins": "Wins",
-                "total_odds": "Total Odds",
-                "legs": "Legs",
-            }
-        )
-        num_cols_grouped = display_grouped.select_dtypes(include="number").columns
-        formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
-        st.dataframe(
-            display_grouped.style.format(formatter_grouped),
-            use_container_width=True
-        )
+st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+with st.expander("📄 Raw Data — click to open full view", expanded=False):
+    display_grouped = df_grouped.copy()
+    display_grouped = display_grouped.rename(
+        columns={
+            "date": "Date",
+            "rank": "Rank",
+            "ticket type": "Ticket Type",
+            "product": "Product",
+            "bets": "Bets",
+            "wins": "Wins",
+            "total_odds": "Total Odds",
+            "legs": "Legs",
+        }
+    )
+    num_cols_grouped = display_grouped.select_dtypes(include="number").columns
+    formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
+    st.dataframe(
+        display_grouped.style.format(formatter_grouped),
+        use_container_width=True
+    )
+st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
 
 
 
