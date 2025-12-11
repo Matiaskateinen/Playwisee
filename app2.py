@@ -228,7 +228,7 @@ with st.sidebar:
     uploaded_file = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"])
 
     st.markdown("---")
-    st.caption("Tip: export from Coolbet as `.xlsx` and drop it here.")
+    st.caption("Tip: export from eg. Coolbet, Veikkaus as `.xlsx` and drop it here.")
 
 # ---------- MAIN ----------
 st.title("PlayWise")
@@ -582,5 +582,6 @@ with tab3:
             display_grouped.style.format(formatter_grouped),
             use_container_width=True
         )
+
 
 
