@@ -369,19 +369,20 @@ by_ticket = (
 by_ticket.index = by_ticket.index.str.title()
 
 over_under_breakdown = None
+goal_total_breakdown = None
 
 by_market_group = None
 if "market name" in df.columns:
     def classify_market(m):
         m = str(m).lower()
-        if any(k in m for k in ["player","points","pts","rebounds","assists","steals","blocks","shots","goal"]):
+        if any(k in m for k in ["over","under","total goals","total points","goal","goals"]):
+            return "Totals (over/under)"
+        if any(k in m for k in ["player","points","pts","rebounds","assists","steals","blocks","shots"]):
             return "Player props"
         if any(k in m for k in ["1x2","match result","full time result"]):
             return "Match result (1X2)"
         if any(k in m for k in ["moneyline","winner","to win"]):
             return "Moneyline"
-        if any(k in m for k in ["over","under","total goals","total points"]):
-            return "Totals (over/under)"
         return "Other markets"
 
     df["market_group"] = df["market name"].apply(classify_market)
@@ -550,6 +551,16 @@ with tab1:
             use_container_width=True
         )
 
+    if goal_total_breakdown is not None and not goal_total_breakdown.empty:
+        st.markdown("#### Match goal totals (Over/Under)")
+        num_cols_goal_fmt = goal_total_breakdown.select_dtypes(include="number").columns
+        formatter_goal = {col: "{:.2f}" for col in num_cols_goal_fmt}
+        st.dataframe(
+            goal_total_breakdown.style
+                .applymap(color_roi, subset=["roi"])
+                .format(formatter_goal),
+            use_container_width=True
+        )
     if by_product is not None and not by_product.empty:
         st.markdown("#### ROI by product")
         product_chart_df = by_product.reset_index().rename(columns={"index": "product"})
