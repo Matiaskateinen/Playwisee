@@ -391,11 +391,11 @@ h3, h4 {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
+    padding: 10px 18px;
     border-radius: 999px;
-    font-size: 0.72rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     background: linear-gradient(120deg, rgba(65, 240, 192, 0.15), rgba(0, 167, 255, 0.15));
     color: #9bf6da;
     border: 1px solid rgba(65, 240, 192, 0.45);
@@ -539,8 +539,8 @@ def color_roi(v):
 
 
 # ---------- HERO OVERVIEW CARD ----------
-st.markdown('<div class="hero-card">', unsafe_allow_html=True)
-st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
+
+st.markdown('<div class="section-pill">TIMELINE</div>', unsafe_allow_html=True)
 top_cols = st.columns([2, 1.3])
 
 with top_cols[0]:
@@ -553,7 +553,7 @@ with top_cols[0]:
     }
     default_range = list(range_options.keys()).index("All Time")
     selected_range = st.radio(
-        "Timeline",
+        " ",
         list(range_options.keys()),
         horizontal=True,
         index=default_range,
@@ -833,5 +833,4 @@ with st.expander("📄 Raw Data — click to open full view", expanded=False):
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
-
 
