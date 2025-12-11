@@ -319,15 +319,6 @@ df_grouped = (
       )
 )
 
-df_grouped["combo_label"] = df_grouped.apply(
-    lambda row: (
-        f"combo {row['date'].strftime('%d/%m')}"
-        if (row["ticket type"].lower().startswith("combo") and pd.notna(row["date"]))
-        else ""
-    ),
-    axis=1
-)
-
 df_grouped["Profit"] = df_grouped["wins"] - df_grouped["bets"]
 df_grouped["ROI %"] = np.where(
     df_grouped["bets"] > 0,
@@ -365,24 +356,33 @@ by_product = (
     .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
+# Title case product labels for consistent casing in UI
+by_product.index = by_product.index.str.title()
+
 by_ticket = (
     df_grouped.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
     .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
+# Title case ticket labels for cleaner display
+by_ticket.index = by_ticket.index.str.title()
+
+over_under_breakdown = None
+goal_total_breakdown = None
+
 by_market_group = None
 if "market name" in df.columns:
     def classify_market(m):
         m = str(m).lower()
-        if any(k in m for k in ["player","points","pts","rebounds","assists","steals","blocks","shots","goal"]):
+        if any(k in m for k in ["over","under","total goals","total points","goal","goals"]):
+            return "Totals (over/under)"
+        if any(k in m for k in ["player","points","pts","rebounds","assists","steals","blocks","shots"]):
             return "Player props"
         if any(k in m for k in ["1x2","match result","full time result"]):
             return "Match result (1X2)"
         if any(k in m for k in ["moneyline","winner","to win"]):
             return "Moneyline"
-        if any(k in m for k in ["over","under","total goals","total points"]):
-            return "Totals (over/under)"
         return "Other markets"
 
     df["market_group"] = df["market name"].apply(classify_market)
@@ -403,6 +403,44 @@ by_ticket[by_ticket_num_cols] = by_ticket[by_ticket_num_cols].round(2)
 if by_market_group is not None:
     by_market_num_cols = by_market_group.select_dtypes(include="number").columns
     by_market_group[by_market_num_cols] = by_market_group[by_market_num_cols].round(2)
+
+    totals_mask = df["market_group"] == "Totals (over/under)"
+    if totals_mask.any():
+        over_under_breakdown = (
+            df.loc[totals_mask]
+            .groupby("market name")
+            .agg(stake=("bets", "sum"), ret=("wins", "sum"))
+            .assign(
+                tickets=df.loc[totals_mask].groupby("market name")["bets"].count(),
+                roi=lambda x: np.where(
+                    x["stake"] > 0,
+                    (x["ret"] - x["stake"]) / x["stake"] * 100,
+                    0.0,
+                ),
+            )
+            .sort_values("roi", ascending=False)
+        )
+        num_cols_ou = over_under_breakdown.select_dtypes(include="number").columns
+        over_under_breakdown[num_cols_ou] = over_under_breakdown[num_cols_ou].round(2)
+
+        goal_totals_mask = totals_mask & df["market name"].str.contains("goal", case=False, na=False)
+        if goal_totals_mask.any():
+            goal_total_breakdown = (
+                df.loc[goal_totals_mask]
+                .groupby("market name")
+                .agg(stake=("bets", "sum"), ret=("wins", "sum"))
+                .assign(
+                    tickets=df.loc[goal_totals_mask].groupby("market name")["bets"].count(),
+                    roi=lambda x: np.where(
+                        x["stake"] > 0,
+                        (x["ret"] - x["stake"]) / x["stake"] * 100,
+                        0.0,
+                    ),
+                )
+                .sort_values("roi", ascending=False)
+            )
+            num_cols_goal = goal_total_breakdown.select_dtypes(include="number").columns
+            goal_total_breakdown[num_cols_goal] = goal_total_breakdown[num_cols_goal].round(2)
 
 def color_roi(v):
     if pd.isna(v): return ""
@@ -521,51 +559,27 @@ with tab1:
     else:
         st.info("No market data found in this file (missing 'market name').")
 
-    if by_product is not None and not by_product.empty:
-        st.markdown("#### ROI by product")
-        product_chart_df = by_product.reset_index().rename(columns={"index": "product"})
-        roi_bar = (
-            alt.Chart(product_chart_df)
-            .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
-            .encode(
-                x=alt.X("product:N", sort="-y", title="Product"),
-                y=alt.Y("roi:Q", title="ROI %"),
-                color=alt.Color(
-                    "roi:Q",
-                    title="ROI %",
-                    legend=None,
-                ),
-                tooltip=[
-                    alt.Tooltip("product:N", title="Product"),
-                    alt.Tooltip("roi:Q", title="ROI %", format=".2f"),
-                    alt.Tooltip("stake:Q", title="Stake", format=".2f"),
-                    alt.Tooltip("ret:Q", title="Return", format=".2f"),
-                ],
-            )
-            .properties(height=320)
+    if over_under_breakdown is not None and not over_under_breakdown.empty:
+        st.markdown("#### Totals (Over/Under) breakdown")
+        num_cols_ou_fmt = over_under_breakdown.select_dtypes(include="number").columns
+        formatter_ou = {col: "{:.2f}" for col in num_cols_ou_fmt}
+        st.dataframe(
+            over_under_breakdown.style
+                .applymap(color_roi, subset=["roi"])
+                .format(formatter_ou),
+            use_container_width=True
         )
 
-        roi_labels = (
-            alt.Chart(product_chart_df)
-            .mark_text(fontWeight="bold", dx=8, dy=-1, color="#e8edf4")
-            .encode(
-                x=alt.X("product:N", sort="-y"),
-                y=alt.Y("roi:Q"),
-                text=alt.Text("roi:Q", format="+.1f"),
-                color=alt.condition("datum.roi >= 0", alt.value("#baf7e4"), alt.value("#ffb2b2")),
-            )
+    if goal_total_breakdown is not None and not goal_total_breakdown.empty:
+        st.markdown("#### Match goal totals (Over/Under)")
+        num_cols_goal_fmt = goal_total_breakdown.select_dtypes(include="number").columns
+        formatter_goal = {col: "{:.2f}" for col in num_cols_goal_fmt}
+        st.dataframe(
+            goal_total_breakdown.style
+                .applymap(color_roi, subset=["roi"])
+                .format(formatter_goal),
+            use_container_width=True
         )
-
-        zero_line = alt.Chart(product_chart_df).mark_rule(color="#263040", strokeDash=[4, 4]).encode(y=alt.datum(0))
-
-        roi_chart = (
-            (roi_bar + roi_labels + zero_line)
-            .configure_axis(grid=False, labelColor="#e8edf4", titleColor="#e8edf4")
-            .configure_view(strokeOpacity=0)
-            .configure_legend(labelColor="#e8edf4", titleColor="#e8edf4")
-        )
-
-        st.altair_chart(roi_chart, use_container_width=True)
 
 with tab2:
     st.markdown("#### Live vs Prematch")
