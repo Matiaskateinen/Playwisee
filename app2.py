@@ -319,15 +319,6 @@ df_grouped = (
       )
 )
 
-df_grouped["combo_label"] = df_grouped.apply(
-    lambda row: (
-        f"combo {row['date'].strftime('%d/%m')}"
-        if (row["ticket type"].lower().startswith("combo") and pd.notna(row["date"]))
-        else ""
-    ),
-    axis=1
-)
-
 df_grouped["Profit"] = df_grouped["wins"] - df_grouped["bets"]
 df_grouped["ROI %"] = np.where(
     df_grouped["bets"] > 0,
@@ -365,11 +356,19 @@ by_product = (
     .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
+# Title case product labels for consistent casing in UI
+by_product.index = by_product.index.str.title()
+
 by_ticket = (
     df_grouped.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
     .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
+
+# Title case ticket labels for cleaner display
+by_ticket.index = by_ticket.index.str.title()
+
+over_under_breakdown = None
 
 by_market_group = None
 if "market name" in df.columns:
@@ -403,6 +402,25 @@ by_ticket[by_ticket_num_cols] = by_ticket[by_ticket_num_cols].round(2)
 if by_market_group is not None:
     by_market_num_cols = by_market_group.select_dtypes(include="number").columns
     by_market_group[by_market_num_cols] = by_market_group[by_market_num_cols].round(2)
+
+    totals_mask = df["market_group"] == "Totals (over/under)"
+    if totals_mask.any():
+        over_under_breakdown = (
+            df.loc[totals_mask]
+            .groupby("market name")
+            .agg(stake=("bets", "sum"), ret=("wins", "sum"))
+            .assign(
+                tickets=df.loc[totals_mask].groupby("market name")["bets"].count(),
+                roi=lambda x: np.where(
+                    x["stake"] > 0,
+                    (x["ret"] - x["stake"]) / x["stake"] * 100,
+                    0.0,
+                ),
+            )
+            .sort_values("roi", ascending=False)
+        )
+        num_cols_ou = over_under_breakdown.select_dtypes(include="number").columns
+        over_under_breakdown[num_cols_ou] = over_under_breakdown[num_cols_ou].round(2)
 
 def color_roi(v):
     if pd.isna(v): return ""
@@ -520,6 +538,17 @@ with tab1:
         )
     else:
         st.info("No market data found in this file (missing 'market name').")
+
+    if over_under_breakdown is not None and not over_under_breakdown.empty:
+        st.markdown("#### Totals (Over/Under) breakdown")
+        num_cols_ou_fmt = over_under_breakdown.select_dtypes(include="number").columns
+        formatter_ou = {col: "{:.2f}" for col in num_cols_ou_fmt}
+        st.dataframe(
+            over_under_breakdown.style
+                .applymap(color_roi, subset=["roi"])
+                .format(formatter_ou),
+            use_container_width=True
+        )
 
     if by_product is not None and not by_product.empty:
         st.markdown("#### ROI by product")
