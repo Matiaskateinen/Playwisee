@@ -29,6 +29,8 @@ st.markdown("""
     --muted: #8ea2b5;
     --text: #e8edf4;
     --accent: #41f0c0;
+    --glow-blue: rgba(0, 157, 255, 0.16);
+    --glow-green: rgba(65, 240, 192, 0.22);
 }
 html, body, [class*="css"] {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -39,6 +41,8 @@ html, body, [class*="css"] {
     isolation: isolate;
 }
 .main {
+    position: relative;
+    overflow: hidden;
     background: radial-gradient(circle at 20% 20%, rgba(65, 240, 192, 0.12), transparent 24%),
                 radial-gradient(circle at 80% 0%, rgba(0, 157, 255, 0.1), transparent 23%),
                 linear-gradient(135deg, #060910 0%, #070a12 50%, #05070d 100%);
@@ -46,13 +50,54 @@ html, body, [class*="css"] {
 .main:before {
     content: '';
     position: fixed;
-    inset: 0;
-    background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-    background-size: 60px 60px;
-    opacity: 0.5;
+    inset: -30% -20% 20% -20%;
+    background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 70px 70px;
+    opacity: 0.35;
     pointer-events: none;
     z-index: 0;
+    transform: perspective(1200px) rotateX(72deg) rotateZ(12deg) translate3d(-6%, -10%, 0);
+    animation: gridDrift 24s linear infinite;
+}
+.main:after {
+    content: '';
+    position: fixed;
+    inset: -10% -30% auto -30%;
+    height: 80vh;
+    background:
+        radial-gradient(closest-side at 25% 35%, var(--glow-green), transparent 60%),
+        radial-gradient(closest-side at 75% 60%, var(--glow-blue), transparent 55%),
+        radial-gradient(closest-side at 45% 80%, rgba(255, 255, 255, 0.08), transparent 55%);
+    filter: blur(12px);
+    mix-blend-mode: screen;
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 0;
+    transform: perspective(1600px) rotateX(70deg) rotateZ(-6deg) translate3d(0, -10%, 0);
+    animation: warpGlow 18s ease-in-out infinite alternate;
+}
+@keyframes gridDrift {
+    0% {
+        transform: perspective(1200px) rotateX(72deg) rotateZ(12deg) translate3d(-6%, -10%, 0);
+    }
+    50% {
+        transform: perspective(1200px) rotateX(70deg) rotateZ(10deg) translate3d(4%, -6%, 0);
+    }
+    100% {
+        transform: perspective(1200px) rotateX(68deg) rotateZ(6deg) translate3d(-8%, -12%, 0);
+    }
+}
+@keyframes warpGlow {
+    0% {
+        transform: perspective(1600px) rotateX(70deg) rotateZ(-6deg) translate3d(0, -10%, 0);
+    }
+    50% {
+        transform: perspective(1600px) rotateX(68deg) rotateZ(-2deg) translate3d(3%, -4%, 0);
+    }
+    100% {
+        transform: perspective(1600px) rotateX(66deg) rotateZ(2deg) translate3d(-3%, -12%, 0);
+    }
 }
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, rgba(11,16,26,0.95), rgba(6,9,15,0.96));
