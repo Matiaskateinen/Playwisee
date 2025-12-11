@@ -223,17 +223,17 @@ h3, h4 {
 # ---------- SIDEBAR ----------
 with st.sidebar:
     st.markdown("### PLAYWISE")
-    st.caption("Betting performance cockpit")
+    st.caption("Your stats, Your edge")
 
     uploaded_file = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"])
 
     st.markdown("---")
-    st.caption("Tip: export from Veikkaus as `.xlsx` and drop it here.")
+    st.caption("Tip: export from Coolbet as `.xlsx` and drop it here.")
 
 # ---------- MAIN ----------
-st.title("PlayWise Pilot")
+st.title("PlayWise")
 st.markdown(
-    '<p class="playwise-subtitle">Precision-grade cockpit for disciplined bettors.</p>',
+    '<p class="playwise-subtitle">Use your strengths, learn from your weaknesses</p>',
     unsafe_allow_html=True,
 )
 
@@ -497,6 +497,7 @@ with digest_cols[1]:
 
 
 # ---------- TABS ----------
+
 st.markdown("")
 tab1, tab2, tab3 = st.tabs(["📊 Markets", "🎟 Tickets", "📄 Raw Data"])
 
