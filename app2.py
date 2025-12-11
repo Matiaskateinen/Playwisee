@@ -391,7 +391,6 @@ with hero_cols[1]:
     uploaded_file = st.file_uploader("", type=["xlsx"])
     st.caption("Tip: export your betting history as .xlsx and drop it here.")
     st.markdown("</div></div>", unsafe_allow_html=True)
-    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
