@@ -251,7 +251,7 @@ if uploaded_file is None:
             <div class="hero-grid">
                 <div class="hero-grid__item">
                     <span class="hero-label">Format</span>
-                    <span class="hero-value">.xlsx (Veikkaus)</span>
+                    <span class="hero-value">.xlsx (Coolbet)</span>
                 </div>
                 <div class="hero-grid__item">
                     <span class="hero-label">Insights</span>
@@ -584,3 +584,4 @@ with tab3:
             display_grouped.style.format(formatter_grouped),
             use_container_width=True
         )
+
