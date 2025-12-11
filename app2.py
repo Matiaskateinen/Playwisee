@@ -663,11 +663,17 @@ with top_cols[1]:
 
     if by_market_group is not None and not by_market_group.empty:
         best = by_market_group["roi"].idxmax()
-        st.write(f"📈 Strongest edge in **{best}** ({by_market_group.loc[best, 'roi']:.2f}%).")
+        st.write(
+            f"📈 Strongest edge in **{str(best).title()}** "
+            f"({by_market_group.loc[best, 'roi']:.2f}%)."
+        )
         losing = by_market_group[by_market_group["roi"] < 0]
         if not losing.empty:
             worst = by_market_group["roi"].idxmin()
-            st.write(f"📉 Weakest in **{worst}** ({by_market_group.loc[worst, 'roi']:.2f}%).")
+            st.write(
+                f"📉 Weakest in **{str(worst).title()}** "
+                f"({by_market_group.loc[worst, 'roi']:.2f}%)."
+            )
     else:
         st.write("ℹ️ Add more bets to unlock market insights.")
 
@@ -717,10 +723,16 @@ with digest_cols[1]:
     st.markdown("#### Micro-highlights")
     if by_product is not None and not by_product.empty:
         best_product = by_product["roi"].idxmax()
-        st.write(f"✅ Strongest lane: **{best_product}** ({by_product.loc[best_product, 'roi']:.2f}% ROI)")
+        st.write(
+            f"✅ Strongest lane: **{str(best_product).title()}** "
+            f"({by_product.loc[best_product, 'roi']:.2f}% ROI)"
+        )
     if by_product is not None and not by_product.empty:
         worst_product = by_product["roi"].idxmin()
-        st.write(f"⚠️ Watchlist: **{worst_product}** ({by_product.loc[worst_product, 'roi']:.2f}% ROI)")
+        st.write(
+            f"⚠️ Watchlist: **{str(worst_product).title()}** "
+            f"({by_product.loc[worst_product, 'roi']:.2f}% ROI)"
+        )
     st.write(f"🧮 Mean stake per ticket: **{avg_bet:.2f} €**")
 
 
@@ -734,7 +746,7 @@ with st.expander("📊 Markets — click to open full view", expanded=False):
     st.markdown("#### Profitability By Market Group")
     if by_market_group is not None and not by_market_group.empty:
         display_by_market = by_market_group.copy()
-        display_by_market.index = display_by_market.index.str.title()
+        display_by_market.index = display_by_market.index.map(lambda x: str(x).title())
         display_by_market = display_by_market.rename(
             columns={
                 "stake": "Stake",
@@ -758,7 +770,7 @@ st.markdown("<div class='section-card'>", unsafe_allow_html=True)
 with st.expander("🎟 Tickets — click to open full view", expanded=False):
     st.markdown("#### Live Vs Prematch")
     display_by_product = by_product.copy()
-    display_by_product.index = display_by_product.index.str.title()
+    display_by_product.index = display_by_product.index.map(lambda x: str(x).title())
     display_by_product = display_by_product.rename(
         columns={
             "stake": "Stake",
@@ -777,7 +789,7 @@ with st.expander("🎟 Tickets — click to open full view", expanded=False):
 
     st.markdown("#### Combo Vs Single")
     display_by_ticket = by_ticket.copy()
-    display_by_ticket.index = display_by_ticket.index.str.title()
+    display_by_ticket.index = display_by_ticket.index.map(lambda x: str(x).title())
     display_by_ticket = display_by_ticket.rename(
         columns={
             "stake": "Stake",
@@ -810,6 +822,8 @@ with st.expander("📄 Raw Data — click to open full view", expanded=False):
             "legs": "Legs",
         }
     )
+    for col in display_grouped.select_dtypes(include="object").columns:
+        display_grouped[col] = display_grouped[col].astype(str).str.title()
     num_cols_grouped = display_grouped.select_dtypes(include="number").columns
     formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
     st.dataframe(
