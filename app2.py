@@ -119,10 +119,100 @@ h1 {
     letter-spacing: 0.04em;
     margin-bottom: 0.15rem;
 }
+.page-wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 22px 14px 0 14px;
+}
+.hero-copy {
+    position: relative;
+    z-index: 2;
+}
+.upload-col {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: linear-gradient(120deg, rgba(65, 240, 192, 0.18), rgba(0, 167, 255, 0.18));
+    color: #9bf6da;
+    border: 1px solid rgba(65, 240, 192, 0.45);
+}
 .playwise-subtitle {
     font-size: 0.97rem;
     color: var(--muted);
     margin-bottom: 0.75rem;
+}
+.hero-headline {
+    font-size: 1.45rem;
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+}
+.hero-description {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.65;
+    max-width: 640px;
+    margin-bottom: 0.6rem;
+}
+.hero-bullets {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 8px;
+}
+.hero-bullets li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--text);
+}
+.hero-bullets li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+}
+.upload-card {
+    position: relative;
+    background: radial-gradient(120% 160% at 0% 0%, rgba(65, 240, 192, 0.08), rgba(10, 15, 24, 0.9)),
+                radial-gradient(140% 160% at 100% 0%, rgba(0, 167, 255, 0.1), rgba(10, 15, 24, 0.9)),
+                var(--card);
+    border: 1px solid var(--stroke);
+    border-radius: 20px;
+    padding: 18px;
+    box-shadow:
+        0 26px 80px rgba(0,0,0,0.7),
+        0 12px 30px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.upload-card__inner {
+    background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0));
+    border-radius: 14px;
+    padding: 10px 12px 6px 12px;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+.upload-card__title {
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+}
+.upload-card__helper {
+    margin: 0 0 6px 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+.hero-spacer {
+    height: 32px;
 }
 .hero-card {
     position: relative;
@@ -265,50 +355,48 @@ h3, h4 {
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- SIDEBAR ----------
-with st.sidebar:
-    st.markdown("### PLAYWISE")
-    st.caption("Your stats, Your edge")
+st.markdown("<div class='page-wrap'>", unsafe_allow_html=True)
+hero_cols = st.columns([1.05, 0.95])
 
-    uploaded_file = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"])
-
-    st.markdown("---")
-    st.caption("Tip: export from eg. Coolbet, Veikkaus as `.xlsx` and drop it here.")
-
-# ---------- MAIN ----------
-st.title("PlayWise")
-st.markdown(
-    '<p class="playwise-subtitle">Use your strengths, learn from your weaknesses</p>',
-    unsafe_allow_html=True,
-)
-
-if uploaded_file is None:
+with hero_cols[0]:
     st.markdown(
         """
-        <div class="hero-card">
-            <div class="section-pill">Setup</div>
-            <h3 style="margin-top:4px; margin-bottom:6px;">See what’s working — and what’s not</h3>
-            <p style="opacity:0.82; font-size:0.95rem; max-width:520px; line-height:1.55;">
-               Upload your bets and get ROI, profit trends and a profile of how you play.
-            </p>
-            <div class="hero-grid">
-                <div class="hero-grid__item">
-                    <span class="hero-label">Format</span>
-                    <span class="hero-value">.xlsx (eg. Coolbet, Veikkaus)</span>
-                </div>
-                <div class="hero-grid__item">
-                    <span class="hero-label">Insights</span>
-                    <span class="hero-value">ROI, profit, markets</span>
-                </div>
-                <div class="hero-grid__item">
-                    <span class="hero-label">Profile</span>
-                    <span class="hero-value">Strenghts + weaknesses</span>
-                </div>
-            </div>
+        <div class="hero-copy">
+            <div class="hero-pill">PlayWise · pilot build</div>
+            <h1 style="margin-top:6px;">PlayWise</h1>
+            <p class="playwise-subtitle">Use your strengths, learn from your weaknesses.</p>
+            <h3 class="hero-headline">See what’s working — and what’s not</h3>
+            <p class="hero-description">Upload your bets to get ROI, profit trends and a profile of how you play. No tips, no picks — just the stats that show your edge.</p>
+            <ul class="hero-bullets">
+                <li>ROI & profit curve to show momentum</li>
+                <li>Strongest and weakest markets surfaced automatically</li>
+                <li>Single- vs combo-heavy profile at a glance</li>
+            </ul>
         </div>
         """,
         unsafe_allow_html=True,
     )
+
+with hero_cols[1]:
+    st.markdown("<div class='upload-col'>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="upload-card">
+            <div class="upload-card__inner">
+                <div class="upload-card__title">Upload Sportsbook Excel</div>
+                <p class="upload-card__helper">.xlsx export from e.g. Coolbet or Veikkaus.</p>
+        """,
+        unsafe_allow_html=True,
+    )
+    uploaded_file = st.file_uploader("", type=["xlsx"])
+    st.caption("Tip: export your betting history as .xlsx and drop it here.")
+    st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
+
+if uploaded_file is None:
     st.stop()
 
 # ---------- DATA PROCESSING ----------
