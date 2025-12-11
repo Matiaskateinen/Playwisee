@@ -236,65 +236,37 @@ st.markdown(
     '<p class="playwise-subtitle">Precision-grade cockpit for disciplined bettors.</p>',
     unsafe_allow_html=True,
 )
+
 if uploaded_file is None:
     st.markdown(
         """
         <div class="hero-card">
-            <div class="section-pill">
-                <span style="width:8px;height:8px;border-radius:999px;background:var(--accent);box-shadow:0 0 12px rgba(65,240,192,0.8);display:inline-block;"></span>
-                Betting stats, not betting tips
-            </div>
-            <h3 style="
-                margin-top:6px;
-                margin-bottom:10px;
-                font-size:1.35rem;
-                letter-spacing:0.04em;
-                text-transform:uppercase;
-            ">
-                Turn your bet history into a real profile
-            </h3>
-            <p style="
-                opacity:0.9;
-                font-size:0.96rem;
-                max-width:540px;
-                line-height:1.6;
-            ">
-                Upload a sportsbook export on the left and get a clean, tracking-app style view of how
-                you actually bet: volume, ROI, swings and which lanes are doing the heavy lifting.
-                No picks, no hype – just your own numbers.
+            <div class="section-pill">Setup</div>
+            <h3 style="margin-top:4px; margin-bottom:6px;">Import and get a lab-grade view of your betting</h3>
+            <p style="opacity:0.82; font-size:0.95rem; max-width:520px; line-height:1.55;">
+                Drop a Sportsbook Excel export in the sidebar. PlayWise cleans, aggregates and serves
+                a clinical read on your bankroll movement: ROI, profit velocity, edge pockets and your
+                behavioural profile.
             </p>
-
             <div class="hero-grid">
                 <div class="hero-grid__item">
-                    <span class="hero-label">What you need</span>
-                    <span class="hero-value">Veikkaus .xlsx export</span>
+                    <span class="hero-label">Format</span>
+                    <span class="hero-value">.xlsx (Veikkaus)</span>
                 </div>
                 <div class="hero-grid__item">
-                    <span class="hero-label">What you get</span>
-                    <span class="hero-value">ROI, profit curve, edges</span>
+                    <span class="hero-label">Insights</span>
+                    <span class="hero-value">ROI, profit, markets</span>
                 </div>
                 <div class="hero-grid__item">
-                    <span class="hero-label">Best use</span>
-                    <span class="hero-value">Shareable stats for your crew</span>
+                    <span class="hero-label">Profile</span>
+                    <span class="hero-value">Singles vs combos</span>
                 </div>
             </div>
-
-            <p style="
-                margin-top:12px;
-                font-size:0.8rem;
-                text-transform:uppercase;
-                letter-spacing:0.12em;
-                color:var(--muted);
-                opacity:0.9;
-            ">
-                Step 1: export from Veikkaus → Step 2: drop file in sidebar → Step 3: scroll down
-            </p>
         </div>
         """,
         unsafe_allow_html=True,
     )
     st.stop()
-
 
 # ---------- DATA PROCESSING ----------
 df = safe_read_excel(uploaded_file)
@@ -317,6 +289,15 @@ df_grouped = (
           total_odds=("odds", np.prod),
           legs=("odds", "size")
       )
+)
+
+df_grouped["combo_label"] = df_grouped.apply(
+    lambda row: (
+        f"combo {row['date'].strftime('%d/%m')}"
+        if (row["ticket type"].lower().startswith("combo") and pd.notna(row["date"]))
+        else ""
+    ),
+    axis=1
 )
 
 df_grouped["Profit"] = df_grouped["wins"] - df_grouped["bets"]
@@ -356,33 +337,24 @@ by_product = (
     .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
-# Title case product labels for consistent casing in UI
-by_product.index = by_product.index.str.title()
-
 by_ticket = (
     df_grouped.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
     .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
 )
 
-# Title case ticket labels for cleaner display
-by_ticket.index = by_ticket.index.str.title()
-
-over_under_breakdown = None
-goal_total_breakdown = None
-
 by_market_group = None
 if "market name" in df.columns:
     def classify_market(m):
         m = str(m).lower()
-        if any(k in m for k in ["over","under","total goals","total points","goal","goals"]):
-            return "Totals (over/under)"
-        if any(k in m for k in ["player","points","pts","rebounds","assists","steals","blocks","shots"]):
+        if any(k in m for k in ["player","points","pts","rebounds","assists","steals","blocks","shots","goal"]):
             return "Player props"
         if any(k in m for k in ["1x2","match result","full time result"]):
             return "Match result (1X2)"
         if any(k in m for k in ["moneyline","winner","to win"]):
             return "Moneyline"
+        if any(k in m for k in ["over","under","total goals","total points"]):
+            return "Totals (over/under)"
         return "Other markets"
 
     df["market_group"] = df["market name"].apply(classify_market)
@@ -403,25 +375,6 @@ by_ticket[by_ticket_num_cols] = by_ticket[by_ticket_num_cols].round(2)
 if by_market_group is not None:
     by_market_num_cols = by_market_group.select_dtypes(include="number").columns
     by_market_group[by_market_num_cols] = by_market_group[by_market_num_cols].round(2)
-
-    totals_mask = df["market_group"] == "Totals (over/under)"
-    if totals_mask.any():
-        over_under_breakdown = (
-            df.loc[totals_mask]
-            .groupby("market name")
-            .agg(stake=("bets", "sum"), ret=("wins", "sum"))
-            .assign(
-                tickets=df.loc[totals_mask].groupby("market name")["bets"].count(),
-                roi=lambda x: np.where(
-                    x["stake"] > 0,
-                    (x["ret"] - x["stake"]) / x["stake"] * 100,
-                    0.0,
-                ),
-            )
-            .sort_values("roi", ascending=False)
-        )
-        num_cols_ou = over_under_breakdown.select_dtypes(include="number").columns
-        over_under_breakdown[num_cols_ou] = over_under_breakdown[num_cols_ou].round(2)
 
 def color_roi(v):
     if pd.isna(v): return ""
@@ -540,73 +493,6 @@ with tab1:
     else:
         st.info("No market data found in this file (missing 'market name').")
 
-    if over_under_breakdown is not None and not over_under_breakdown.empty:
-        st.markdown("#### Totals (Over/Under) breakdown")
-        num_cols_ou_fmt = over_under_breakdown.select_dtypes(include="number").columns
-        formatter_ou = {col: "{:.2f}" for col in num_cols_ou_fmt}
-        st.dataframe(
-            over_under_breakdown.style
-                .applymap(color_roi, subset=["roi"])
-                .format(formatter_ou),
-            use_container_width=True
-        )
-
-    if goal_total_breakdown is not None and not goal_total_breakdown.empty:
-        st.markdown("#### Match goal totals (Over/Under)")
-        num_cols_goal_fmt = goal_total_breakdown.select_dtypes(include="number").columns
-        formatter_goal = {col: "{:.2f}" for col in num_cols_goal_fmt}
-        st.dataframe(
-            goal_total_breakdown.style
-                .applymap(color_roi, subset=["roi"])
-                .format(formatter_goal),
-            use_container_width=True
-        )
-    if by_product is not None and not by_product.empty:
-        st.markdown("#### ROI by product")
-        product_chart_df = by_product.reset_index().rename(columns={"index": "product"})
-        roi_bar = (
-            alt.Chart(product_chart_df)
-            .mark_bar(cornerRadiusTopLeft=8, cornerRadiusTopRight=8)
-            .encode(
-                x=alt.X("product:N", sort="-y", title="Product"),
-                y=alt.Y("roi:Q", title="ROI %"),
-                color=alt.Color(
-                    "roi:Q",
-                    title="ROI %",
-                    legend=None,
-                ),
-                tooltip=[
-                    alt.Tooltip("product:N", title="Product"),
-                    alt.Tooltip("roi:Q", title="ROI %", format=".2f"),
-                    alt.Tooltip("stake:Q", title="Stake", format=".2f"),
-                    alt.Tooltip("ret:Q", title="Return", format=".2f"),
-                ],
-            )
-            .properties(height=320)
-        )
-
-        roi_labels = (
-            alt.Chart(product_chart_df)
-            .mark_text(fontWeight="bold", dx=8, dy=-1, color="#e8edf4")
-            .encode(
-                x=alt.X("product:N", sort="-y"),
-                y=alt.Y("roi:Q"),
-                text=alt.Text("roi:Q", format="+.1f"),
-                color=alt.condition("datum.roi >= 0", alt.value("#baf7e4"), alt.value("#ffb2b2")),
-            )
-        )
-
-        zero_line = alt.Chart(product_chart_df).mark_rule(color="#263040", strokeDash=[4, 4]).encode(y=alt.datum(0))
-
-        roi_chart = (
-            (roi_bar + roi_labels + zero_line)
-            .configure_axis(grid=False, labelColor="#e8edf4", titleColor="#e8edf4")
-            .configure_view(strokeOpacity=0)
-            .configure_legend(labelColor="#e8edf4", titleColor="#e8edf4")
-        )
-
-        st.altair_chart(roi_chart, use_container_width=True)
-
 with tab2:
     st.markdown("#### Live vs Prematch")
     num_cols_prod = by_product.select_dtypes(include="number").columns
@@ -636,4 +522,3 @@ with tab3:
             df_grouped.style.format(formatter_grouped),
             use_container_width=True
         )
-
