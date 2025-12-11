@@ -135,17 +135,25 @@ h1 {
     justify-content: center;
 }
 .hero-pill {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
+    gap: 6px;
+
+    padding: 6px 14px;
     border-radius: 999px;
-    font-size: 0.78rem;
+
+    font-size: 0.65rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
+
     background: linear-gradient(120deg, rgba(65, 240, 192, 0.18), rgba(0, 167, 255, 0.18));
     color: #9bf6da;
     border: 1px solid rgba(65, 240, 192, 0.45);
+    z-index: 9999; /* Always on top */
 }
 .playwise-subtitle {
     font-size: 0.97rem;
@@ -415,7 +423,7 @@ with hero_cols[0]:
     st.markdown(
         """
         <div class="hero-copy">
-            <div class="hero-pill">PlayWise · pilot build</div>
+            <div class="hero-pill">PlayWise · 1.022 </div>
             <h1 style="margin-top:6px;">PlayWise</h1>
             <p class="playwise-subtitle">Use your strengths, learn from your weaknesses.</p>
             <h3 class="hero-headline">See what’s working — and what’s not</h3>
@@ -833,4 +841,3 @@ with st.expander("📄 Raw Data — click to open full view", expanded=False):
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
-
