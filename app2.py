@@ -444,6 +444,19 @@ df["product"] = df["product"].astype(str)
 df["date"] = pd.to_datetime(df["date"].ffill())
 df["rank"] = df["rank"].ffill()
 
+if "market name" in df.columns:
+    def classify_market(m):
+        m = str(m).lower()
+        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
+            return "Over/Under Goals"
+        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
+            return "Player Points"
+        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
+            return "Match Results"
+        return "Other Markets"
+
+    df["market_group"] = df["market name"].apply(classify_market)
+
 df_grouped = (
     df.groupby(["date", "rank", "ticket type", "product"], as_index=False)
       .agg(
@@ -470,23 +483,90 @@ if df_grouped.empty:
 numeric_cols_grouped = df_grouped.select_dtypes(include="number").columns
 df_grouped[numeric_cols_grouped] = df_grouped[numeric_cols_grouped].round(2)
 
-total_stake = float(df_grouped["bets"].sum())
-total_return = float(df_grouped["wins"].sum())
-total_profit = total_return - total_stake
-roi_total = (total_profit / total_stake * 100) if total_stake > 0 else 0.0
-avg_bet = float(df_grouped["bets"].mean())
-num_bets = len(df_grouped)
-num_singles = int((df_grouped["ticket type"].str.lower() == "single").sum())
-num_combos = int((df_grouped["ticket type"].str.lower() == "combo").sum())
+df_filtered = df_grouped.copy()
+df_filtered_raw = df.copy()
 
-total_stake = round(total_stake, 2)
-total_return = round(total_return, 2)
-total_profit = round(total_profit, 2)
-roi_total = round(roi_total, 2)
-avg_bet = round(avg_bet, 2)
+def color_roi(v):
+    if pd.isna(v): return ""
+    return "color: green" if v > 0 else "color: red" if v < 0 else "color: gray"
+
+
+# ---------- HERO OVERVIEW CARD ----------
+st.markdown('<div class="hero-card">', unsafe_allow_html=True)
+st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
+top_cols = st.columns([2, 1.3])
+
+with top_cols[0]:
+    range_options = {
+        "1 Month": pd.DateOffset(months=1),
+        "3 Months": pd.DateOffset(months=3),
+        "6 Months": pd.DateOffset(months=6),
+        "1 Year": pd.DateOffset(years=1),
+        "All Time": None,
+    }
+    default_range = list(range_options.keys()).index("All Time")
+    selected_range = st.radio(
+        "Timeline",
+        list(range_options.keys()),
+        horizontal=True,
+        index=default_range,
+    )
+
+    cutoff = range_options[selected_range]
+    if cutoff is not None:
+        min_date = df_grouped["date"].max() - cutoff
+        df_filtered = df_grouped[df_grouped["date"] >= min_date].copy()
+        df_filtered_raw = df[df["date"] >= min_date].copy()
+    else:
+        df_filtered = df_grouped.copy()
+        df_filtered_raw = df.copy()
+
+    if df_filtered.empty:
+        st.warning("No bets found for this timeline.")
+        st.stop()
+
+    total_stake = float(df_filtered["bets"].sum())
+    total_return = float(df_filtered["wins"].sum())
+    total_profit = total_return - total_stake
+    roi_total = (total_profit / total_stake * 100) if total_stake > 0 else 0.0
+    avg_bet = float(df_filtered["bets"].mean())
+    num_bets = len(df_filtered)
+    num_singles = int((df_filtered["ticket type"].str.lower() == "single").sum())
+    num_combos = int((df_filtered["ticket type"].str.lower() == "combo").sum())
+
+    total_stake = round(total_stake, 2)
+    total_return = round(total_return, 2)
+    total_profit = round(total_profit, 2)
+    roi_total = round(roi_total, 2)
+    avg_bet = round(avg_bet, 2)
+
+    mc1, mc2, mc3, mc4 = st.columns(4)
+    mc1.metric("ROI %", f"{roi_total:.2f}%")
+    mc2.metric("Total Profit", f"{total_profit:.2f} €")
+    mc3.metric("Avg Bet", f"{avg_bet:.2f} €")
+    mc4.metric("Tickets", f"{num_bets} ({num_singles}/{num_combos})")
+
+    st.markdown("##### Profit over time")
+    df_daily = df_filtered.groupby("date", as_index=False)["Profit"].sum().sort_values("date")
+    df_daily["Profit"] = df_daily["Profit"].round(2)
+
+    if not df_daily.empty:
+        df_range = df_daily.copy()
+        if cutoff is not None:
+            min_date = df_daily["date"].max() - cutoff
+            df_range = df_daily[df_daily["date"] >= min_date].copy()
+
+        df_range["CumProfit"] = df_range["Profit"].cumsum().round(2)
+        df_range["Profit"] = df_range["Profit"].round(2)
+
+        chart = alt.Chart(df_range).mark_line().encode(
+            x="date:T",
+            y="CumProfit:Q"
+        )
+        st.altair_chart(chart, use_container_width=True)
 
 by_product = (
-    df_grouped.groupby("product")
+    df_filtered.groupby("product")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
     .assign(
         profit=lambda x: x["ret"] - x["stake"],
@@ -495,7 +575,7 @@ by_product = (
 )
 
 by_ticket = (
-    df_grouped.groupby("ticket type")
+    df_filtered.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
     .assign(
         profit=lambda x: x["ret"] - x["stake"],
@@ -504,21 +584,9 @@ by_ticket = (
 )
 
 by_market_group = None
-if "market name" in df.columns:
-    def classify_market(m):
-        m = str(m).lower()
-        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
-            return "Over/Under Goals"
-        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
-            return "Player Points"
-        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
-            return "Match Results"
-        return "Other Markets"
-
-    df["market_group"] = df["market name"].apply(classify_market)
-
+if "market_group" in df_filtered_raw.columns:
     by_market_group = (
-        df.groupby("market_group")
+        df_filtered_raw.groupby("market_group")
         .agg(stake=("bets","sum"), ret=("wins","sum"))
         .assign(
             profit=lambda x: x["ret"] - x["stake"],
@@ -537,62 +605,9 @@ if by_market_group is not None:
     by_market_num_cols = by_market_group.select_dtypes(include="number").columns
     by_market_group[by_market_num_cols] = by_market_group[by_market_num_cols].round(2)
 
-def color_roi(v):
-    if pd.isna(v): return ""
-    return "color: green" if v > 0 else "color: red" if v < 0 else "color: gray"
-
-
-# ---------- HERO OVERVIEW CARD ----------
-st.markdown('<div class="hero-card">', unsafe_allow_html=True)
-st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
-top_cols = st.columns([2, 1.3])
-
-with top_cols[0]:
-    mc1, mc2, mc3, mc4 = st.columns(4)
-    mc1.metric("ROI %", f"{roi_total:.2f}%")
-    mc2.metric("Total Profit", f"{total_profit:.2f} €")
-    mc3.metric("Avg Bet", f"{avg_bet:.2f} €")
-    mc4.metric("Tickets", f"{num_bets} ({num_singles}/{num_combos})")
-
-    st.markdown("##### Profit over time")
-    df_daily = df_grouped.groupby("date", as_index=False)["Profit"].sum().sort_values("date")
-    df_daily["Profit"] = df_daily["Profit"].round(2)
-
-    range_options = {
-        "1 Month": pd.DateOffset(months=1),
-        "3 Months": pd.DateOffset(months=3),
-        "6 Months": pd.DateOffset(months=6),
-        "1 Year": pd.DateOffset(years=1),
-        "All Time": None,
-    }
-    default_range = list(range_options.keys()).index("All Time")
-    selected_range = st.radio(
-        "Timeline",
-        list(range_options.keys()),
-        horizontal=True,
-        index=default_range,
-    )
-
-    if not df_daily.empty:
-        cutoff = range_options[selected_range]
-        if cutoff is not None:
-            min_date = df_daily["date"].max() - cutoff
-            df_range = df_daily[df_daily["date"] >= min_date].copy()
-        else:
-            df_range = df_daily.copy()
-
-        df_range["CumProfit"] = df_range["Profit"].cumsum().round(2)
-        df_range["Profit"] = df_range["Profit"].round(2)
-
-        chart = alt.Chart(df_range).mark_line().encode(
-            x="date:T",
-            y="CumProfit:Q"
-        )
-        st.altair_chart(chart, use_container_width=True)
-
 with top_cols[1]:
     st.markdown("##### Quick profile")
-    avg_legs = df_grouped["legs"].mean()
+    avg_legs = df_filtered["legs"].mean()
 
     if avg_legs > 1.5:
         st.write("🎲 You lean **combo-heavy** → higher variance, bigger swings.")
