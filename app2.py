@@ -563,8 +563,11 @@ range_options = {
 }
 default_range = list(range_options.keys()).index("All Time")
 
-header_cols = st.columns([3, 1])
+header_cols = st.columns([1, 2])
 with header_cols[0]:
+    st.markdown('<div class="section-pill">OVERVIEW</div>', unsafe_allow_html=True)
+with header_cols[1]:
+    st.caption("Timeline")
     selected_range = st.radio(
         "Timeline",
         list(range_options.keys()),
@@ -836,6 +839,5 @@ with st.expander("📄 Raw Data — click to open full view", expanded=False):
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
-
 
 
