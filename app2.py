@@ -291,15 +291,6 @@ df_grouped = (
       )
 )
 
-df_grouped["combo_label"] = df_grouped.apply(
-    lambda row: (
-        f"combo {row['date'].strftime('%d/%m')}"
-        if (row["ticket type"].lower().startswith("combo") and pd.notna(row["date"]))
-        else ""
-    ),
-    axis=1
-)
-
 df_grouped["Profit"] = df_grouped["wins"] - df_grouped["bets"]
 df_grouped["ROI %"] = np.where(
     df_grouped["bets"] > 0,
@@ -334,35 +325,42 @@ avg_bet = round(avg_bet, 2)
 by_product = (
     df_grouped.groupby("product")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
-    .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
+    .assign(
+        profit=lambda x: x["ret"] - x["stake"],
+        roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0)
+    )
 )
 
 by_ticket = (
     df_grouped.groupby("ticket type")
     .agg(stake=("bets","sum"), ret=("wins","sum"))
-    .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
+    .assign(
+        profit=lambda x: x["ret"] - x["stake"],
+        roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0)
+    )
 )
 
 by_market_group = None
 if "market name" in df.columns:
     def classify_market(m):
         m = str(m).lower()
-        if any(k in m for k in ["player","points","pts","rebounds","assists","steals","blocks","shots","goal"]):
-            return "Player props"
-        if any(k in m for k in ["1x2","match result","full time result"]):
-            return "Match result (1X2)"
-        if any(k in m for k in ["moneyline","winner","to win"]):
-            return "Moneyline"
-        if any(k in m for k in ["over","under","total goals","total points"]):
-            return "Totals (over/under)"
-        return "Other markets"
+        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
+            return "Over/Under Goals"
+        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
+            return "Player Points"
+        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
+            return "Match Results"
+        return "Other Markets"
 
     df["market_group"] = df["market name"].apply(classify_market)
 
     by_market_group = (
         df.groupby("market_group")
         .agg(stake=("bets","sum"), ret=("wins","sum"))
-        .assign(roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0))
+        .assign(
+            profit=lambda x: x["ret"] - x["stake"],
+            roi=lambda x: np.where(x["stake"] > 0, (x["ret"]-x["stake"]) / x["stake"] * 100, 0.0)
+        )
         .sort_values("roi", ascending=False)
     )
 
@@ -395,12 +393,35 @@ with top_cols[0]:
 
     st.markdown("##### Profit over time")
     df_daily = df_grouped.groupby("date", as_index=False)["Profit"].sum().sort_values("date")
-    df_daily["CumProfit"] = df_daily["Profit"].cumsum()
     df_daily["Profit"] = df_daily["Profit"].round(2)
-    df_daily["CumProfit"] = df_daily["CumProfit"].round(2)
+
+    range_options = {
+        "1 Month": pd.DateOffset(months=1),
+        "3 Months": pd.DateOffset(months=3),
+        "6 Months": pd.DateOffset(months=6),
+        "1 Year": pd.DateOffset(years=1),
+        "All Time": None,
+    }
+    default_range = list(range_options.keys()).index("All Time")
+    selected_range = st.radio(
+        "Timeline",
+        list(range_options.keys()),
+        horizontal=True,
+        index=default_range,
+    )
 
     if not df_daily.empty:
-        chart = alt.Chart(df_daily).mark_line().encode(
+        cutoff = range_options[selected_range]
+        if cutoff is not None:
+            min_date = df_daily["date"].max() - cutoff
+            df_range = df_daily[df_daily["date"] >= min_date].copy()
+        else:
+            df_range = df_daily.copy()
+
+        df_range["CumProfit"] = df_range["Profit"].cumsum().round(2)
+        df_range["Profit"] = df_range["Profit"].round(2)
+
+        chart = alt.Chart(df_range).mark_line().encode(
             x="date:T",
             y="CumProfit:Q"
         )
@@ -477,16 +498,25 @@ with digest_cols[1]:
 
 # ---------- TABS ----------
 st.markdown("")
-tab1, tab2, tab3 = st.tabs(["📊 Markets", "🎟 Tickets", "📄 Raw data"])
+tab1, tab2, tab3 = st.tabs(["📊 Markets", "🎟 Tickets", "📄 Raw Data"])
 
 with tab1:
-    st.markdown("#### Profitability by market group")
+    st.markdown("#### Profitability By Market Group")
     if by_market_group is not None and not by_market_group.empty:
-        num_cols_market = by_market_group.select_dtypes(include="number").columns
-        formatter_market = {col: "{:.2f}" for col in num_cols_market}
+        display_by_market = by_market_group.copy()
+        display_by_market.index = display_by_market.index.str.title()
+        display_by_market = display_by_market.rename(
+            columns={
+                "stake": "Stake",
+                "ret": "Return",
+                "profit": "Profit",
+                "roi": "ROI %",
+            }
+        )[ ["Stake", "Return", "Profit", "ROI %"] ]
+        formatter_market = {col: "{:.2f}" for col in display_by_market.select_dtypes(include="number").columns}
         st.dataframe(
-            by_market_group.style
-                .applymap(color_roi, subset=["roi"])
+            display_by_market.style
+                .applymap(color_roi, subset=["ROI %"])
                 .format(formatter_market),
             use_container_width=True
         )
@@ -494,31 +524,62 @@ with tab1:
         st.info("No market data found in this file (missing 'market name').")
 
 with tab2:
-    st.markdown("#### Live vs Prematch")
-    num_cols_prod = by_product.select_dtypes(include="number").columns
-    formatter_prod = {col: "{:.2f}" for col in num_cols_prod}
+    st.markdown("#### Live Vs Prematch")
+    display_by_product = by_product.copy()
+    display_by_product.index = display_by_product.index.str.title()
+    display_by_product = display_by_product.rename(
+        columns={
+            "stake": "Stake",
+            "ret": "Return",
+            "profit": "Profit",
+            "roi": "ROI %",
+        }
+    )[ ["Stake", "Return", "Profit", "ROI %"] ]
+    formatter_prod = {col: "{:.2f}" for col in display_by_product.select_dtypes(include="number").columns}
     st.dataframe(
-        by_product.style
-            .applymap(color_roi, subset=["roi"])
+        display_by_product.style
+            .applymap(color_roi, subset=["ROI %"])
             .format(formatter_prod),
         use_container_width=True
     )
 
-    st.markdown("#### Combo vs Single")
-    num_cols_ticket = by_ticket.select_dtypes(include="number").columns
-    formatter_ticket = {col: "{:.2f}" for col in num_cols_ticket}
+    st.markdown("#### Combo Vs Single")
+    display_by_ticket = by_ticket.copy()
+    display_by_ticket.index = display_by_ticket.index.str.title()
+    display_by_ticket = display_by_ticket.rename(
+        columns={
+            "stake": "Stake",
+            "ret": "Return",
+            "profit": "Profit",
+            "roi": "ROI %",
+        }
+    )[ ["Stake", "Return", "Profit", "ROI %"] ]
+    formatter_ticket = {col: "{:.2f}" for col in display_by_ticket.select_dtypes(include="number").columns}
     st.dataframe(
-        by_ticket.style
-            .applymap(color_roi, subset=["roi"])
+        display_by_ticket.style
+            .applymap(color_roi, subset=["ROI %"])
             .format(formatter_ticket),
         use_container_width=True
     )
 
 with tab3:
-    with st.expander("Ticket-level data (aggregated singles & combos)", expanded=True):
-        num_cols_grouped = df_grouped.select_dtypes(include="number").columns
+    with st.expander("Ticket-Level Data (Aggregated Singles & Combos)", expanded=True):
+        display_grouped = df_grouped.copy()
+        display_grouped = display_grouped.rename(
+            columns={
+                "date": "Date",
+                "rank": "Rank",
+                "ticket type": "Ticket Type",
+                "product": "Product",
+                "bets": "Bets",
+                "wins": "Wins",
+                "total_odds": "Total Odds",
+                "legs": "Legs",
+            }
+        )
+        num_cols_grouped = display_grouped.select_dtypes(include="number").columns
         formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
         st.dataframe(
-            df_grouped.style.format(formatter_grouped),
+            display_grouped.style.format(formatter_grouped),
             use_container_width=True
         )
