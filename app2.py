@@ -326,6 +326,38 @@ div[data-testid="dataframe"] {
     background: var(--accent);
     box-shadow: 0 0 10px rgba(65, 240, 192, 0.6);
 }
+.digest-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
+}
+.digest-chip {
+    flex: 1 1 200px;
+    min-width: 200px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+    border: 1px solid var(--stroke);
+    border-radius: 14px;
+    padding: 14px 16px 12px 16px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.55);
+}
+.digest-label {
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+.digest-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.digest-value .win { color: var(--accent); }
+.digest-value .loss { color: #ff7b7b; }
 .stExpander {
     border-radius: 12px !important;
     border: 1px solid var(--stroke) !important;
@@ -391,6 +423,7 @@ with hero_cols[1]:
     uploaded_file = st.file_uploader("", type=["xlsx"])
     st.caption("Tip: export your betting history as .xlsx and drop it here.")
     st.markdown("</div></div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
@@ -585,7 +618,8 @@ st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 # ---------- QUICK DIGEST ----------
 date_start = df_grouped["date"].min()
 date_end = df_grouped["date"].max()
-unique_products = df_grouped["product"].nunique()
+win_rate = round((df_grouped["wins"] > 0).mean() * 100, 1)
+loss_rate = round(100 - win_rate, 1)
 
 digest_cols = st.columns([1.4, 1])
 
@@ -593,26 +627,28 @@ with digest_cols[0]:
     st.markdown("#### Session digest")
     st.markdown(
         """
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px;">
-            <div class="data-chip"><span class="data-chip__dot"></span>Rows: <strong>{rows}</strong></div>
-            <div class="data-chip"><span class="data-chip__dot"></span>Products: <strong>{products}</strong></div>
-            <div class="data-chip"><span class="data-chip__dot"></span>Period: <strong>{start} → {end}</strong></div>
+        <div class="digest-row">
+            <div class="digest-chip">
+                <div class="digest-label">Bets</div>
+                <div class="digest-value">{rows}</div>
+            </div>
+            <div class="digest-chip">
+                <div class="digest-label">Period</div>
+                <div class="digest-value">{start} → {end}</div>
+            </div>
+            <div class="digest-chip">
+                <div class="digest-label">Win / Loss</div>
+                <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
+            </div>
         </div>
         """.format(
             rows=len(df_grouped),
-            products=unique_products,
             start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
             end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
+            win=win_rate,
+            loss=loss_rate,
         ),
         unsafe_allow_html=True,
-    )
-
-    st.markdown(
-        """
-        - **Volume**: Keeps every ticket aggregated, no dilution between singles and combos.
-        - **ROIs**: Rounded to 2 decimals for clinical readability.
-        - **Markets**: Auto-bucketed by props, totals, lines and 1X2 where present.
-        """
     )
 
 with digest_cols[1]:
