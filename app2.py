@@ -691,9 +691,9 @@ st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 
 
 # ---------- QUICK DIGEST ----------
-date_start = df_grouped["date"].min()
-date_end = df_grouped["date"].max()
-win_rate = round((df_grouped["wins"] > 0).mean() * 100, 1)
+date_start = df_filtered["date"].min()
+date_end = df_filtered["date"].max()
+win_rate = round((df_filtered["wins"] > 0).mean() * 100, 1)
 loss_rate = round(100 - win_rate, 1)
 
 digest_cols = st.columns([1.4, 1])
@@ -717,7 +717,7 @@ with digest_cols[0]:
             </div>
         </div>
         """.format(
-            rows=len(df_grouped),
+            rows=len(df_filtered),
             start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
             end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
             win=win_rate,
@@ -832,6 +832,5 @@ with st.expander("📄 Raw Data — click to open full view", expanded=False):
 st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
-
 
 
