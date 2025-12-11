@@ -128,6 +128,12 @@ h1 {
     position: relative;
     z-index: 2;
 }
+.upload-col {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .hero-pill {
     display: inline-flex;
     align-items: center;
@@ -372,6 +378,7 @@ with hero_cols[0]:
     )
 
 with hero_cols[1]:
+    st.markdown("<div class='upload-col'>", unsafe_allow_html=True)
     st.markdown(
         """
         <div class="upload-card">
