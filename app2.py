@@ -566,19 +566,6 @@ nav_choice = st.sidebar.radio(
     help="Jump between your profile, deep dives, and market/ticket breakdowns.",
 )
 
-st.sidebar.markdown("#### Open section on external site")
-nav_links = {
-    "Profile": "https://leetify.com/profile",
-    "Deep Dives": "https://leetify.com/deep-dives",
-    "Markets/Tickets": "https://leetify.com/markets",
-}
-
-for label, link in nav_links.items():
-    st.sidebar.markdown(
-        f"<a class='nav-link-btn' href='{link}' target='_blank' rel='noreferrer noopener'>{label} <span class='chevron'>↗</span></a>",
-        unsafe_allow_html=True,
-    )
-
 def color_roi(v):
     if pd.isna(v): return ""
     return "color: green" if v > 0 else "color: red" if v < 0 else "color: gray"
