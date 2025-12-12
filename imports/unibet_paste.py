@@ -38,19 +38,33 @@ def _extract_datetime(text: str) -> pd.Timestamp | None:
 
 
 def _split_bets(raw_text: str) -> List[str]:
-    # keep any header text with the first coupon
-    parts = re.split(r"(?=Kuponkitunnus:\s*\d+)", raw_text)
+    """
+    Split the pasted text into individual bet sections.
+
+    Unibet pastes often include a bet "summary" block (e.g. "Single @ 2.45")
+    *before* the corresponding ``Kuponkitunnus`` row. That summary must travel
+    with the following coupon, otherwise odds and status get attributed to the
+    previous bet. We therefore treat both bet headers and coupon IDs as anchor
+    points when carving up the text.
+    """
+
+    anchors = r"(?=^(?:Kuponkitunnus:\s*\d+|Single\b|Tupla\b|Tripla\b|Parlay\b|Tuplavoitettu\b))"
+    parts = re.split(anchors, raw_text, flags=re.IGNORECASE | re.MULTILINE)
+
     sections: List[str] = []
     carryover = ""
 
     for part in parts:
-        if re.search(r"Kuponkitunnus:\s*\d+", part):
+        if not part.strip():
+            continue
+
+        is_anchor = re.match(r"^(Kuponkitunnus:|Single\b|Tupla\b|Tripla\b|Parlay\b|Tuplavoitettu\b)", part, flags=re.IGNORECASE)
+        if is_anchor:
             sections.append((carryover + part).strip())
             carryover = ""
         else:
             carryover += part
 
-    # If we had header text but no coupon, ignore. If coupons exist, prepend the header.
     if carryover and sections:
         sections[0] = (carryover + "\n" + sections[0]).strip()
 
