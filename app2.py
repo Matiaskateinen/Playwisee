@@ -8,6 +8,10 @@ from imports.unibet_paste import parse_unibet_paste
 
 st.set_page_config(page_title="PlayWise Pilot", layout="wide")
 
+# Initialize session state slot for Unibet pastes to avoid NameError in downstream checks
+if "unibet_df" not in st.session_state:
+    st.session_state["unibet_df"] = None
+
 pd.options.display.float_format = "{:.2f}".format
 
 
