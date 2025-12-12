@@ -47,11 +47,15 @@ def _split_bets(raw_text: str) -> List[str]:
     """
     Split the pasted text into individual bet sections.
 
-    Unibet pastes list a bet summary (e.g. ``Single`` header and odds) before
-    the ``Kuponkitunnus`` line of that bet. We therefore stream through the
-    lines and treat either a bet header *or* a coupon ID as the start of a new
-    section, carrying any leading summary lines forward to the next coupon.
+    Unibet pastes often include a bet "summary" block (e.g. "Single @ 2.45")
+    *before* the corresponding ``Kuponkitunnus`` row. That summary must travel
+    with the following coupon, otherwise odds and status get attributed to the
+    previous bet. We therefore treat both bet headers and coupon IDs as anchor
+    points when carving up the text.
     """
+
+    anchors = r"(?=^(?:Kuponkitunnus:\s*\d+|Single\b|Tupla\b|Tripla\b|Parlay\b|Tuplavoitettu\b))"
+    parts = re.split(anchors, raw_text, flags=re.IGNORECASE | re.MULTILINE)
 
     sections: List[str] = []
     current: List[str] = []
@@ -62,29 +66,33 @@ def _split_bets(raw_text: str) -> List[str]:
         if not line:
             continue
 
-        if COUPON_PATTERN.match(line):
+        if coupon_pattern.match(line):
             if current:
                 sections.append("\n".join(current).strip())
             current = pending + [line]
             pending = []
             continue
 
-        if HEADER_PATTERN.match(line):
+        if header_pattern.match(line):
             if current:
                 sections.append("\n".join(current).strip())
                 current = []
             pending = [line]
             continue
 
-        if current:
-            current.append(line)
+    for part in parts:
+        if not part.strip():
+            continue
+
+        is_anchor = re.match(r"^(Kuponkitunnus:|Single\b|Tupla\b|Tripla\b|Parlay\b|Tuplavoitettu\b)", part, flags=re.IGNORECASE)
+        if is_anchor:
+            sections.append((carryover + part).strip())
+            carryover = ""
         else:
             pending.append(line)
 
-    if current:
-        sections.append("\n".join(current).strip())
-    elif pending:
-        sections.append("\n".join(pending).strip())
+    if carryover and sections:
+        sections[0] = (carryover + "\n" + sections[0]).strip()
 
     return [s for s in sections if s]
 
