@@ -474,12 +474,15 @@ if uploaded_file is None:
     st.stop()
 
 # ---------- DATA PROCESSING ----------
-df_raw = safe_read_excel(uploaded_file)
-try:
-    df = normalize_coolbet_data(df_raw)
-except NormalizationError as exc:  # pragma: no cover - streamlit surface
-    st.error(str(exc))
-    st.stop()
+if parsed_unibet_df is not None:
+    df = parsed_unibet_df
+else:
+    df_raw = safe_read_excel(uploaded_file)
+    try:
+        df = normalize_coolbet_data(df_raw)
+    except NormalizationError as exc:  # pragma: no cover - streamlit surface
+        st.error(str(exc))
+        st.stop()
 
 if "market name" in df.columns:
     def classify_market(m):
