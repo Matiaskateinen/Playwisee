@@ -41,16 +41,20 @@ def _split_bets(raw_text: str) -> List[str]:
     # keep any header text with the first coupon
     parts = re.split(r"(?=Kuponkitunnus:\s*\d+)", raw_text)
     sections: List[str] = []
-    buffer = ""
+    carryover = ""
+
     for part in parts:
         if re.search(r"Kuponkitunnus:\s*\d+", part):
-            sections.append(buffer + part)
-            buffer = ""
+            sections.append((carryover + part).strip())
+            carryover = ""
         else:
-            buffer += part
-    if buffer and sections:
-        sections[0] = buffer + sections[0]
-    return [s.strip() for s in sections if s.strip()]
+            carryover += part
+
+    # If we had header text but no coupon, ignore. If coupons exist, prepend the header.
+    if carryover and sections:
+        sections[0] = (carryover + "\n" + sections[0]).strip()
+
+    return [s for s in sections if s]
 
 
 def _parse_legs(lines: List[str], bet_id: str, overall_odds: float | None) -> List[dict]:
@@ -72,8 +76,13 @@ def _parse_legs(lines: List[str], bet_id: str, overall_odds: float | None) -> Li
                 event = follow
                 break
 
-        odds_match = re.search(r"([0-9]+[.,][0-9]+)", " ".join(lines[idx : idx + 3]))
+        window_text = " ".join(lines[idx : idx + 5])
+        odds_match = re.search(r"([0-9]+[.,][0-9]+)", window_text)
         leg_odds = _normalize_number(odds_match.group(1)) if odds_match else None
+
+        # Ignore metadata lines that aren't tied to a selection (e.g., score lines)
+        if not event and leg_odds is None:
+            continue
 
         legs.append(
             {
@@ -161,6 +170,7 @@ def parse_unibet_paste(raw_text: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
                 "odds": odds,
                 "payout": payout,
                 "status": status,
+                "leg_count": leg_count,
             }
         )
         legs.extend(section_legs)
@@ -176,6 +186,7 @@ def parse_unibet_paste(raw_text: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
             "odds",
             "payout",
             "status",
+            "leg_count",
         ],
     )
     legs_df = pd.DataFrame(legs, columns=["bet_id", "event", "market", "selection", "odds"])
@@ -232,6 +243,7 @@ def normalize_unibet_paste(raw_text: str) -> pd.DataFrame:
                 "wins": pd.to_numeric(bet.get("payout"), errors="coerce"),
                 "odds": pd.to_numeric(bet.get("odds"), errors="coerce"),
                 "market name": market_lookup.get(bet.get("bet_id"), None),
+                "legs": pd.to_numeric(bet.get("leg_count"), errors="coerce"),
             }
         )
 
@@ -245,7 +257,7 @@ def normalize_unibet_paste(raw_text: str) -> pd.DataFrame:
     normalized["ticket type"] = normalized["ticket type"].fillna("single")
     normalized["product"] = normalized["product"].fillna("unibet")
 
-    for col, default in [("bets", 0.0), ("wins", 0.0), ("odds", 1.0)]:
+    for col, default in [("bets", 0.0), ("wins", 0.0), ("odds", 1.0), ("legs", 1)]:
         normalized[col] = pd.to_numeric(normalized[col], errors="coerce").fillna(default)
 
     if "market name" in normalized.columns:
