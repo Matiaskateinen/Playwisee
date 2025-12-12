@@ -4,6 +4,7 @@ import numpy as np
 import altair as alt
 
 from imports.coolbet import NormalizationError, normalize_coolbet_data
+from imports.unibet_paste import parse_unibet_paste
 
 st.set_page_config(page_title="PlayWise Pilot", layout="wide")
 
@@ -453,6 +454,16 @@ with hero_cols[1]:
     )
     uploaded_file = st.file_uploader("", type=["xlsx"])
     st.caption("Tip: export your betting history as .xlsx and drop it here.")
+    with st.expander("Or paste Unibet bet history", expanded=False):
+        raw_text = st.text_area("Paste your Unibet bet history here", height=200)
+        if st.button("Parse Unibet paste", key="parse_unibet_paste"):
+            bets_df, legs_df = parse_unibet_paste(raw_text)
+            st.markdown("**Parsed bets (Unibet)**")
+            st.dataframe(bets_df)
+            st.markdown("**Parsed legs (Unibet)**")
+            st.dataframe(legs_df)
+            if uploaded_file is None:
+                st.stop()
     st.markdown("</div></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
