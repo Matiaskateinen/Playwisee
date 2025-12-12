@@ -52,7 +52,27 @@ def _split_bets(raw_text: str) -> List[str]:
     parts = re.split(anchors, raw_text, flags=re.IGNORECASE | re.MULTILINE)
 
     sections: List[str] = []
-    carryover = ""
+    current: List[str] = []
+    pending: List[str] = []  # summary lines that should attach to the next coupon
+
+    for raw_line in raw_text.splitlines():
+        line = raw_line.rstrip()
+        if not line:
+            continue
+
+        if coupon_pattern.match(line):
+            if current:
+                sections.append("\n".join(current).strip())
+            current = pending + [line]
+            pending = []
+            continue
+
+        if header_pattern.match(line):
+            if current:
+                sections.append("\n".join(current).strip())
+                current = []
+            pending = [line]
+            continue
 
     for part in parts:
         if not part.strip():
@@ -63,7 +83,7 @@ def _split_bets(raw_text: str) -> List[str]:
             sections.append((carryover + part).strip())
             carryover = ""
         else:
-            carryover += part
+            pending.append(line)
 
     if carryover and sections:
         sections[0] = (carryover + "\n" + sections[0]).strip()
