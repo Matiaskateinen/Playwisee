@@ -80,6 +80,16 @@ def _split_sections(raw_text: str) -> List[str]:
         if not line:
             continue
 
+        # The Unibet paste occasionally inserts a "show history" toggle between
+        # coupons. Treat it as a safe boundary so it never swallows the next
+        # ticket.
+        if line.lower().startswith("näytä tapahtumahistoria"):
+            if current:
+                sections.append("\n".join(current).strip())
+                current = []
+            pending_header = []
+            continue
+
         if COUPON_PATTERN.match(line):
             if current:
                 sections.append("\n".join(current).strip())
@@ -104,7 +114,30 @@ def _split_sections(raw_text: str) -> List[str]:
     elif pending_header:
         sections.append("\n".join(pending_header).strip())
 
-    return [s for s in sections if s]
+    cleaned_sections = [s for s in sections if s]
+
+    # Fallback: if we unexpectedly produced fewer sections than coupon ids,
+    # regroup strictly by coupon boundaries so every ticket is surfaced.
+    coupon_count = len(COUPON_PATTERN.findall(raw_text))
+    if coupon_count and len(cleaned_sections) < coupon_count:
+        rebuilt: List[str] = []
+        buffer: List[str] = []
+        for raw_line in raw_text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            if COUPON_PATTERN.match(line):
+                if buffer:
+                    rebuilt.append("\n".join(buffer).strip())
+                buffer = [line]
+            else:
+                buffer.append(line)
+        if buffer:
+            rebuilt.append("\n".join(buffer).strip())
+
+        cleaned_sections = [s for s in rebuilt if s]
+
+    return cleaned_sections
 
 
 def _parse_legs(lines: List[str], bet_id: str | None, overall_odds: float | None) -> List[dict]:
