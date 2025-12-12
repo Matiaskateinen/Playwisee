@@ -536,6 +536,14 @@ df_grouped[numeric_cols_grouped] = df_grouped[numeric_cols_grouped].round(2)
 df_filtered = df_grouped.copy()
 df_filtered_raw = df.copy()
 
+# ---------- NAVIGATION ----------
+nav_choice = st.sidebar.radio(
+    "Navigate",
+    ["Profile", "Deep Dives", "Markets/Tickets"],
+    index=0,
+    help="Jump between your profile, deep dives, and market/ticket breakdowns.",
+)
+
 def color_roi(v):
     if pd.isna(v): return ""
     return "color: green" if v > 0 else "color: red" if v < 0 else "color: gray"
@@ -686,43 +694,67 @@ with top_cols[1]:
 st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 
 
-# ---------- QUICK DIGEST ----------
-date_start = df_filtered["date"].min()
-date_end = df_filtered["date"].max()
-win_rate = round((df_filtered["wins"] > 0).mean() * 100, 1)
-loss_rate = round(100 - win_rate, 1)
+# ---------- QUICK DIGEST / PROFILE ----------
+if nav_choice == "Profile":
+    date_start = df_filtered["date"].min()
+    date_end = df_filtered["date"].max()
+    win_rate = round((df_filtered["wins"] > 0).mean() * 100, 1)
+    loss_rate = round(100 - win_rate, 1)
+    total_bets_count = len(df_filtered_raw)
+    time_span = "–"
+    if pd.notna(date_start) and pd.notna(date_end):
+        time_span = f"{date_start.strftime('%b %Y')} – {date_end.strftime('%b %Y')}"
 
-digest_cols = st.columns([1.4, 1])
+    st.markdown("### Profile")
+    profile_cols = st.columns(3)
+    profile_cols[0].metric("Total bets", f"{total_bets_count}")
+    profile_cols[1].metric("Net P/L", f"{total_profit:.2f} €")
+    profile_cols[2].metric("ROI", f"{roi_total:.2f}%")
 
-with digest_cols[0]:
-    st.markdown("#### Session digest")
-    st.markdown(
-        """
-        <div class="digest-row">
-            <div class="digest-chip">
-                <div class="digest-label">Bets</div>
-                <div class="digest-value">{rows}</div>
-            </div>
-            <div class="digest-chip">
-                <div class="digest-label">Period</div>
-                <div class="digest-value">{start} → {end}</div>
-            </div>
-            <div class="digest-chip">
-                <div class="digest-label">Win / Loss</div>
-                <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
-            </div>
-        </div>
-        """.format(
-            rows=len(df_filtered),
-            start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
-            end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
-            win=win_rate,
-            loss=loss_rate,
-        ),
-        unsafe_allow_html=True,
-    )
+    profile_cols_2 = st.columns(3)
+    profile_cols_2[0].metric("Avg stake", f"{avg_bet:.2f} €")
+    profile_cols_2[1].metric("Win rate", f"{win_rate:.1f}%")
+    profile_cols_2[2].metric("Time span", time_span)
 
-with digest_cols[1]:
+    digest_cols = st.columns([1.4, 1])
+
+    with digest_cols[0]:
+        st.markdown("#### Session digest")
+        st.markdown(
+            """
+            <div class="digest-row">
+                <div class="digest-chip">
+                    <div class="digest-label">Bets</div>
+                    <div class="digest-value">{rows}</div>
+                </div>
+                <div class="digest-chip">
+                    <div class="digest-label">Period</div>
+                    <div class="digest-value">{start} → {end}</div>
+                </div>
+                <div class="digest-chip">
+                    <div class="digest-label">Win / Loss</div>
+                    <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
+                </div>
+            </div>
+            """.format(
+                rows=len(df_filtered),
+                start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
+                end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
+                win=win_rate,
+                loss=loss_rate,
+            ),
+            unsafe_allow_html=True,
+        )
+
+    with digest_cols[1]:
+        st.markdown("#### Session notes")
+        st.write(f"🧮 Mean stake per ticket: **{avg_bet:.2f} €**")
+
+
+# ---------- INTERACTIVE SECTIONS ----------
+
+if nav_choice == "Deep Dives":
+    st.markdown("### Deep dives")
     st.markdown("#### Micro-highlights")
     if by_product is not None and not by_product.empty:
         best_product = by_product["roi"].idxmax()
@@ -730,27 +762,44 @@ with digest_cols[1]:
             f"✅ Strongest lane: **{str(best_product).title()}** "
             f"({by_product.loc[best_product, 'roi']:.2f}% ROI)"
         )
-    if by_product is not None and not by_product.empty:
         worst_product = by_product["roi"].idxmin()
         st.write(
             f"⚠️ Watchlist: **{str(worst_product).title()}** "
             f"({by_product.loc[worst_product, 'roi']:.2f}% ROI)"
         )
     st.write(f"🧮 Mean stake per ticket: **{avg_bet:.2f} €**")
+    st.markdown("<div class='section-stack'>", unsafe_allow_html=True)
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    with st.expander("📊 Markets — click to open full view", expanded=False):
+        st.markdown("#### Profitability By Market Group")
+        if by_market_group is not None and not by_market_group.empty:
+            display_by_market = by_market_group.copy()
+            display_by_market.index = display_by_market.index.map(lambda x: str(x).title())
+            display_by_market = display_by_market.rename(
+                columns={
+                    "stake": "Stake",
+                    "ret": "Return",
+                    "profit": "Profit",
+                    "roi": "ROI %",
+                }
+            )[ ["Stake", "Return", "Profit", "ROI %"] ]
+            formatter_market = {col: "{:.2f}" for col in display_by_market.select_dtypes(include="number").columns}
+            st.dataframe(
+                display_by_market.style
+                    .applymap(color_roi, subset=["ROI %"])
+                    .format(formatter_market),
+                use_container_width=True
+            )
+        else:
+            st.info("No market data found in this file (missing 'market name').")
+    st.markdown("</div>", unsafe_allow_html=True)
 
-
-# ---------- INTERACTIVE SECTIONS ----------
-
-st.markdown("### Deep dives")
-st.markdown("<div class='section-stack'>", unsafe_allow_html=True)
-
-st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-with st.expander("📊 Markets — click to open full view", expanded=False):
-    st.markdown("#### Profitability By Market Group")
-    if by_market_group is not None and not by_market_group.empty:
-        display_by_market = by_market_group.copy()
-        display_by_market.index = display_by_market.index.map(lambda x: str(x).title())
-        display_by_market = display_by_market.rename(
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    with st.expander("🎟 Tickets — click to open full view", expanded=False):
+        st.markdown("#### Live Vs Prematch")
+        display_by_product = by_product.copy()
+        display_by_product.index = display_by_product.index.map(lambda x: str(x).title())
+        display_by_product = display_by_product.rename(
             columns={
                 "stake": "Stake",
                 "ret": "Return",
@@ -758,81 +807,129 @@ with st.expander("📊 Markets — click to open full view", expanded=False):
                 "roi": "ROI %",
             }
         )[ ["Stake", "Return", "Profit", "ROI %"] ]
-        formatter_market = {col: "{:.2f}" for col in display_by_market.select_dtypes(include="number").columns}
+        formatter_prod = {col: "{:.2f}" for col in display_by_product.select_dtypes(include="number").columns}
         st.dataframe(
-            display_by_market.style
+            display_by_product.style
                 .applymap(color_roi, subset=["ROI %"])
-                .format(formatter_market),
+                .format(formatter_prod),
             use_container_width=True
         )
-    else:
-        st.info("No market data found in this file (missing 'market name').")
-st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-with st.expander("🎟 Tickets — click to open full view", expanded=False):
-    st.markdown("#### Live Vs Prematch")
-    display_by_product = by_product.copy()
-    display_by_product.index = display_by_product.index.map(lambda x: str(x).title())
-    display_by_product = display_by_product.rename(
-        columns={
-            "stake": "Stake",
-            "ret": "Return",
-            "profit": "Profit",
-            "roi": "ROI %",
-        }
-    )[ ["Stake", "Return", "Profit", "ROI %"] ]
-    formatter_prod = {col: "{:.2f}" for col in display_by_product.select_dtypes(include="number").columns}
-    st.dataframe(
-        display_by_product.style
-            .applymap(color_roi, subset=["ROI %"])
-            .format(formatter_prod),
-        use_container_width=True
-    )
+        st.markdown("#### Combo Vs Single")
+        display_by_ticket = by_ticket.copy()
+        display_by_ticket.index = display_by_ticket.index.map(lambda x: str(x).title())
+        display_by_ticket = display_by_ticket.rename(
+            columns={
+                "stake": "Stake",
+                "ret": "Return",
+                "profit": "Profit",
+                "roi": "ROI %",
+            }
+        )[ ["Stake", "Return", "Profit", "ROI %"] ]
+        formatter_ticket = {col: "{:.2f}" for col in display_by_ticket.select_dtypes(include="number").columns}
+        st.dataframe(
+            display_by_ticket.style
+                .applymap(color_roi, subset=["ROI %"])
+                .format(formatter_ticket),
+            use_container_width=True
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("#### Combo Vs Single")
-    display_by_ticket = by_ticket.copy()
-    display_by_ticket.index = display_by_ticket.index.map(lambda x: str(x).title())
-    display_by_ticket = display_by_ticket.rename(
-        columns={
-            "stake": "Stake",
-            "ret": "Return",
-            "profit": "Profit",
-            "roi": "ROI %",
-        }
-    )[ ["Stake", "Return", "Profit", "ROI %"] ]
-    formatter_ticket = {col: "{:.2f}" for col in display_by_ticket.select_dtypes(include="number").columns}
-    st.dataframe(
-        display_by_ticket.style
-            .applymap(color_roi, subset=["ROI %"])
-            .format(formatter_ticket),
-        use_container_width=True
-    )
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-with st.expander("📄 Raw Data — click to open full view", expanded=False):
-    display_grouped = df_grouped.copy()
-    display_grouped = display_grouped.rename(
-        columns={
-            "date": "Date",
-            "rank": "Rank",
-            "ticket type": "Ticket Type",
-            "product": "Product",
-            "bets": "Bets",
-            "wins": "Wins",
-            "total_odds": "Total Odds",
-            "legs": "Legs",
-        }
-    )
-    for col in display_grouped.select_dtypes(include="object").columns:
-        display_grouped[col] = display_grouped[col].astype(str).str.title()
-    num_cols_grouped = display_grouped.select_dtypes(include="number").columns
-    formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
-    st.dataframe(
-        display_grouped.style.format(formatter_grouped),
-        use_container_width=True
-    )
-st.markdown("</div>", unsafe_allow_html=True)
+if nav_choice == "Markets/Tickets":
+    st.markdown("### Markets & Tickets")
+    st.markdown("<div class='section-stack'>", unsafe_allow_html=True)
 
-st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    with st.expander("📊 Markets — click to open full view", expanded=True):
+        st.markdown("#### Profitability By Market Group")
+        if by_market_group is not None and not by_market_group.empty:
+            display_by_market = by_market_group.copy()
+            display_by_market.index = display_by_market.index.map(lambda x: str(x).title())
+            display_by_market = display_by_market.rename(
+                columns={
+                    "stake": "Stake",
+                    "ret": "Return",
+                    "profit": "Profit",
+                    "roi": "ROI %",
+                }
+            )[ ["Stake", "Return", "Profit", "ROI %"] ]
+            formatter_market = {col: "{:.2f}" for col in display_by_market.select_dtypes(include="number").columns}
+            st.dataframe(
+                display_by_market.style
+                    .applymap(color_roi, subset=["ROI %"])
+                    .format(formatter_market),
+                use_container_width=True
+            )
+        else:
+            st.info("No market data found in this file (missing 'market name').")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    with st.expander("🎟 Tickets — click to open full view", expanded=True):
+        st.markdown("#### Live Vs Prematch")
+        display_by_product = by_product.copy()
+        display_by_product.index = display_by_product.index.map(lambda x: str(x).title())
+        display_by_product = display_by_product.rename(
+            columns={
+                "stake": "Stake",
+                "ret": "Return",
+                "profit": "Profit",
+                "roi": "ROI %",
+            }
+        )[ ["Stake", "Return", "Profit", "ROI %"] ]
+        formatter_prod = {col: "{:.2f}" for col in display_by_product.select_dtypes(include="number").columns}
+        st.dataframe(
+            display_by_product.style
+                .applymap(color_roi, subset=["ROI %"])
+                .format(formatter_prod),
+            use_container_width=True
+        )
+
+        st.markdown("#### Combo Vs Single")
+        display_by_ticket = by_ticket.copy()
+        display_by_ticket.index = display_by_ticket.index.map(lambda x: str(x).title())
+        display_by_ticket = display_by_ticket.rename(
+            columns={
+                "stake": "Stake",
+                "ret": "Return",
+                "profit": "Profit",
+                "roi": "ROI %",
+            }
+        )[ ["Stake", "Return", "Profit", "ROI %"] ]
+        formatter_ticket = {col: "{:.2f}" for col in display_by_ticket.select_dtypes(include="number").columns}
+        st.dataframe(
+            display_by_ticket.style
+                .applymap(color_roi, subset=["ROI %"])
+                .format(formatter_ticket),
+            use_container_width=True
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
+    with st.expander("📄 Raw Data — click to open full view", expanded=False):
+        display_grouped = df_grouped.copy()
+        display_grouped = display_grouped.rename(
+            columns={
+                "date": "Date",
+                "rank": "Rank",
+                "ticket type": "Ticket Type",
+                "product": "Product",
+                "bets": "Bets",
+                "wins": "Wins",
+                "total_odds": "Total Odds",
+                "legs": "Legs",
+            }
+        )
+        for col in display_grouped.select_dtypes(include="object").columns:
+            display_grouped[col] = display_grouped[col].astype(str).str.title()
+        num_cols_grouped = display_grouped.select_dtypes(include="number").columns
+        formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
+        st.dataframe(
+            display_grouped.style.format(formatter_grouped),
+            use_container_width=True
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
