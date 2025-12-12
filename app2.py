@@ -4,13 +4,16 @@ import numpy as np
 import altair as alt
 
 from imports.coolbet import NormalizationError, normalize_coolbet_data
-from imports.unibet_paste import parse_unibet_paste
+from imports.unibet_paste import normalize_unibet_paste, parse_unibet_paste
 
 st.set_page_config(page_title="PlayWise Pilot", layout="wide")
 
 # Initialize session state slot for Unibet pastes to avoid NameError in downstream checks
 if "unibet_df" not in st.session_state:
     st.session_state["unibet_df"] = None
+
+if "parsed_unibet_df" not in st.session_state:
+    st.session_state["parsed_unibet_df"] = None
 
 pd.options.display.float_format = "{:.2f}".format
 
@@ -466,15 +469,17 @@ with hero_cols[1]:
             st.dataframe(bets_df)
             st.markdown("**Parsed legs (Unibet)**")
             st.dataframe(legs_df)
-            if uploaded_file is None:
-                st.stop()
+            normalized_unibet = normalize_unibet_paste(raw_text)
+            st.session_state["parsed_unibet_df"] = normalized_unibet
     st.markdown("</div></div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
 
-if uploaded_file is None:
+parsed_unibet_df = st.session_state.get("parsed_unibet_df")
+
+if uploaded_file is None and parsed_unibet_df is None:
     st.stop()
 
 # ---------- DATA PROCESSING ----------
