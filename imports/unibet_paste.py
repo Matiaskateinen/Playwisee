@@ -54,45 +54,39 @@ def _split_bets(raw_text: str) -> List[str]:
     points when carving up the text.
     """
 
-    anchors = r"(?=^(?:Kuponkitunnus:\s*\d+|Single\b|Tupla\b|Tripla\b|Parlay\b|Tuplavoitettu\b))"
-    parts = re.split(anchors, raw_text, flags=re.IGNORECASE | re.MULTILINE)
-
     sections: List[str] = []
     current: List[str] = []
-    pending: List[str] = []  # summary lines that should attach to the next coupon
+    pending_summary: List[str] = []  # summary lines that should attach to the next coupon
 
     for raw_line in raw_text.splitlines():
         line = raw_line.rstrip()
         if not line:
             continue
 
-        if coupon_pattern.match(line):
+        if COUPON_PATTERN.match(line):
             if current:
                 sections.append("\n".join(current).strip())
-            current = pending + [line]
-            pending = []
+            current = pending_summary + [line]
+            pending_summary = []
             continue
 
-        if header_pattern.match(line):
+        if HEADER_PATTERN.match(line):
             if current:
                 sections.append("\n".join(current).strip())
                 current = []
-            pending = [line]
+            pending_summary = [line]
             continue
 
-    for part in parts:
-        if not part.strip():
-            continue
-
-        is_anchor = re.match(r"^(Kuponkitunnus:|Single\b|Tupla\b|Tripla\b|Parlay\b|Tuplavoitettu\b)", part, flags=re.IGNORECASE)
-        if is_anchor:
-            sections.append((carryover + part).strip())
-            carryover = ""
+        if pending_summary and not current:
+            pending_summary.append(line)
         else:
-            pending.append(line)
+            current.append(line)
 
-    if carryover and sections:
-        sections[0] = (carryover + "\n" + sections[0]).strip()
+    if current:
+        sections.append("\n".join(current).strip())
+    elif pending_summary:
+        # Handle a dangling summary block with no coupon following it
+        sections.append("\n".join(pending_summary).strip())
 
     return [s for s in sections if s]
 
