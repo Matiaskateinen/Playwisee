@@ -134,6 +134,28 @@ h1 {
     margin: 0 auto;
     padding: 22px 14px 0 14px;
 }
+.nav-link-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    margin: 8px 0;
+    border: 1px solid var(--stroke);
+    border-radius: 12px;
+    background: linear-gradient(120deg, rgba(65, 240, 192, 0.08), rgba(0, 157, 255, 0.08));
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+}
+.nav-link-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+.nav-link-btn .chevron {
+    margin-left: auto;
+    color: var(--accent);
+}
 .hero-copy {
     position: relative;
     z-index: 2;
