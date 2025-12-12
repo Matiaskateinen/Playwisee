@@ -36,6 +36,12 @@ def _extract_datetime(text: str) -> pd.Timestamp | None:
 
     return pd.Timestamp(dt, tz="UTC")
 
+# Regex patterns shared by the splitter and tests
+HEADER_PATTERN = re.compile(
+    r"^(Single|TuplaVoitettu|Tupla|Tripla|Parlay|Tuplavoitettu)", re.IGNORECASE
+)
+COUPON_PATTERN = re.compile(r"^Kuponkitunnus:\s*\d+", re.IGNORECASE)
+
 
 def _split_bets(raw_text: str) -> List[str]:
     """
