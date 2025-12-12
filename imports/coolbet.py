@@ -61,22 +61,41 @@ def normalize_coolbet_data(df: pd.DataFrame) -> pd.DataFrame:
     normalized.columns = [str(col).strip().lower() for col in normalized.columns]
     normalized = _apply_aliases(normalized)
 
+    # collapse any duplicated canonical columns by picking the first non-null value
+    # across duplicate headers (e.g. when both "result" and "status" map to "rank")
+    for col in set(normalized.columns):
+        duplicates = [c for c in normalized.columns if c == col]
+        if len(duplicates) > 1:
+            normalized[col] = normalized[duplicates].bfill(axis=1).iloc[:, 0]
+            normalized = normalized.drop(columns=duplicates[1:])
+
+    # If no alias resolves to ``rank`` (e.g. completely missing from the export),
+    # add a placeholder column so downstream grouping does not fail.
+    if "rank" not in normalized.columns:
+        normalized["rank"] = "unknown"
+
     missing = REQUIRED_COLUMNS - set(normalized.columns)
     if missing:
         raise NormalizationError(
             "Missing required columns after normalization: " + ", ".join(sorted(missing))
         )
 
-    normalized["ticket type"] = normalized["ticket type"].astype(str)
-    normalized["product"] = normalized["product"].astype(str)
+    normalized["ticket type"] = normalized["ticket type"].astype(str).str.strip().str.lower()
+    normalized["product"] = normalized["product"].astype(str).str.strip().str.lower()
     normalized["date"] = pd.to_datetime(normalized["date"].ffill())
-    normalized["rank"] = normalized["rank"].ffill()
+    normalized["rank"] = (
+        normalized["rank"].ffill().fillna("unknown").astype(str).str.strip().str.lower()
+    )
 
     for col in ["bets", "wins", "odds"]:
         normalized[col] = pd.to_numeric(normalized[col], errors="coerce")
 
+    normalized["bets"] = normalized["bets"].fillna(0)
+    normalized["wins"] = normalized["wins"].fillna(0)
+    normalized["odds"] = normalized["odds"].fillna(1.0)
+
     if "market name" in normalized.columns:
-        normalized["market name"] = normalized["market name"].astype(str)
+        normalized["market name"] = normalized["market name"].astype(str).str.strip()
 
     return normalized
 
