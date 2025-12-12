@@ -1,29 +1,55 @@
-"""Parser and normalizer for Unibet bet history pasted as raw text."""
+"""Parse and normalize Unibet bet history pasted as raw text.
+
+This module mirrors the output schema of :mod:`imports.coolbet` so the
+Streamlit dashboard can render graphs from Unibet pastes the same way it does
+for Coolbet Excel uploads.
+"""
 
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Tuple
 
 import pandas as pd
 
+# ---------------------------------------------------------------------------
+# Data helpers
+# ---------------------------------------------------------------------------
 
-def _normalize_number(value: str) -> float | None:
+DATE_PATTERN = re.compile(r"(\d{2}\.\d{2}\.\d{4})\s*klo\s*[•.]?\s*(\d{2}\.\d{2}\.\d{2})")
+COUPON_PATTERN = re.compile(r"Kuponkitunnus:\s*(\d+)", re.IGNORECASE)
+HEADER_PATTERN = re.compile(r"^(Single|Tupla|Tripla|Parlay|Tuplavoitettu)", re.IGNORECASE)
+STATUS_PATTERN = re.compile(r"(Voitettu|Vireill[aä]|H[aä]vitty|Peruttu)", re.IGNORECASE)
+
+
+@dataclass
+class ParsedBet:
+    bet_id: str | None
+    placed_at: pd.Timestamp | None
+    bet_type: str | None
+    status: str | None
+    stake: float | None
+    odds: float | None
+    payout: float | None
+    legs: List[dict]
+
+
+def _normalize_number(value: str | None) -> float | None:
     if not value:
         return None
 
     cleaned = value.replace("€", "").replace(" ", "")
-    cleaned = re.sub(r"(\d),(?=\d{1,2}(\D|$))", r"\1.", cleaned)
+    cleaned = cleaned.replace(",", ".")
     try:
         return float(cleaned)
     except ValueError:
         return None
 
 
-def _extract_datetime(text: str) -> pd.Timestamp | None:
-    # 12.12.2025 klo • 13.05.03
-    match = re.search(r"(\d{2}\.\d{2}\.\d{4})\s*klo\s*[•.]?\s*(\d{2}\.\d{2}\.\d{2})", text)
+def _parse_datetime(text: str) -> pd.Timestamp | None:
+    match = DATE_PATTERN.search(text)
     if not match:
         return None
 
@@ -36,87 +62,106 @@ def _extract_datetime(text: str) -> pd.Timestamp | None:
 
     return pd.Timestamp(dt, tz="UTC")
 
-# Regex patterns shared by the splitter and tests
-HEADER_PATTERN = re.compile(
-    r"^(Single|TuplaVoitettu|Tupla|Tripla|Parlay|Tuplavoitettu)", re.IGNORECASE
-)
-COUPON_PATTERN = re.compile(r"^Kuponkitunnus:\s*\d+", re.IGNORECASE)
 
+def _split_sections(raw_text: str) -> List[str]:
+    """Split the pasted blob into bet sections.
 
-def _split_bets(raw_text: str) -> List[str]:
-    """
-    Split the pasted text into individual bet sections.
-
-    Unibet pastes often include a bet "summary" block (e.g. "Single @ 2.45")
-    *before* the corresponding ``Kuponkitunnus`` row. That summary must travel
-    with the following coupon, otherwise odds and status get attributed to the
-    previous bet. We therefore treat both bet headers and coupon IDs as anchor
-    points when carving up the text.
+    Unibet pastes sometimes start with a ticket summary (e.g. ``TuplaVoitettu``)
+    followed by the actual coupon row. We treat both the summary header and the
+    ``Kuponkitunnus`` line as boundaries so each section stays intact.
     """
 
     sections: List[str] = []
     current: List[str] = []
-    pending_summary: List[str] = []  # summary lines that should attach to the next coupon
+    pending_header: List[str] = []
 
     for raw_line in raw_text.splitlines():
-        line = raw_line.rstrip()
+        line = raw_line.strip()
         if not line:
+            continue
+
+        # The Unibet paste occasionally inserts a "show history" toggle between
+        # coupons. Treat it as a safe boundary so it never swallows the next
+        # ticket.
+        if line.lower().startswith("näytä tapahtumahistoria"):
+            if current:
+                sections.append("\n".join(current).strip())
+                current = []
+            pending_header = []
             continue
 
         if COUPON_PATTERN.match(line):
             if current:
                 sections.append("\n".join(current).strip())
-            current = pending_summary + [line]
-            pending_summary = []
+            current = pending_header + [line]
+            pending_header = []
             continue
 
         if HEADER_PATTERN.match(line):
             if current:
                 sections.append("\n".join(current).strip())
                 current = []
-            pending_summary = [line]
+            pending_header = [line]
             continue
 
-        if pending_summary and not current:
-            pending_summary.append(line)
+        if pending_header and not current:
+            pending_header.append(line)
         else:
             current.append(line)
 
     if current:
         sections.append("\n".join(current).strip())
-    elif pending_summary:
-        # Handle a dangling summary block with no coupon following it
-        sections.append("\n".join(pending_summary).strip())
+    elif pending_header:
+        sections.append("\n".join(pending_header).strip())
 
-    return [s for s in sections if s]
+    cleaned_sections = [s for s in sections if s]
+
+    # Fallback: if we unexpectedly produced fewer sections than coupon ids,
+    # regroup strictly by coupon boundaries so every ticket is surfaced.
+    coupon_count = len(COUPON_PATTERN.findall(raw_text))
+    if coupon_count and len(cleaned_sections) < coupon_count:
+        rebuilt: List[str] = []
+        buffer: List[str] = []
+        for raw_line in raw_text.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            if COUPON_PATTERN.match(line):
+                if buffer:
+                    rebuilt.append("\n".join(buffer).strip())
+                buffer = [line]
+            else:
+                buffer.append(line)
+        if buffer:
+            rebuilt.append("\n".join(buffer).strip())
+
+        cleaned_sections = [s for s in rebuilt if s]
+
+    return cleaned_sections
 
 
-def _parse_legs(lines: List[str], bet_id: str, overall_odds: float | None) -> List[dict]:
+def _parse_legs(lines: List[str], bet_id: str | None, overall_odds: float | None) -> List[dict]:
     legs: List[dict] = []
-    skip_prefixes = {"kuponkitunnus", "kertoimet", "panos", "voitto"}
 
+    leg_pattern = re.compile(r"(.+?)@\s*([0-9.,]+)")
     for idx, line in enumerate(lines):
-        if ":" not in line:
-            continue
-        key = line.split(":", 1)[0].strip().lower()
-        if key in skip_prefixes:
+        match = leg_pattern.search(line)
+        if not match:
             continue
 
-        market, selection = [piece.strip() for piece in line.split(":", 1)]
+        left, odds_text = match.groups()
+        odds = _normalize_number(odds_text)
+
+        if ":" in left:
+            market, selection = [part.strip() for part in left.split(":", 1)]
+        else:
+            market, selection = None, left.strip()
 
         event = None
-        for follow in lines[idx + 1 : idx + 4]:
+        for follow in lines[idx + 1 : idx + 3]:
             if " - " in follow:
-                event = follow
+                event = follow.strip()
                 break
-
-        window_text = " ".join(lines[idx : idx + 5])
-        odds_match = re.search(r"([0-9]+[.,][0-9]+)", window_text)
-        leg_odds = _normalize_number(odds_match.group(1)) if odds_match else None
-
-        # Ignore metadata lines that aren't tied to a selection (e.g., score lines)
-        if not event and leg_odds is None:
-            continue
 
         legs.append(
             {
@@ -124,16 +169,16 @@ def _parse_legs(lines: List[str], bet_id: str, overall_odds: float | None) -> Li
                 "event": event,
                 "market": market or None,
                 "selection": selection or None,
-                "odds": leg_odds,
+                "odds": odds,
             }
         )
 
     if not legs:
-        event_line = next((ln for ln in lines if " - " in ln), None)
+        # Fallback to a single leg using the overall odds
         legs.append(
             {
                 "bet_id": bet_id,
-                "event": event_line,
+                "event": next((ln for ln in lines if " - " in ln), None),
                 "market": None,
                 "selection": None,
                 "odds": overall_odds,
@@ -143,91 +188,90 @@ def _parse_legs(lines: List[str], bet_id: str, overall_odds: float | None) -> Li
     return legs
 
 
-def parse_unibet_paste(raw_text: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Parse Unibet bet history pasted as raw text.
+def _parse_section(section: str) -> ParsedBet:
+    lines = [ln.strip() for ln in section.splitlines() if ln.strip()]
+    text_blob = "\n".join(lines)
 
-    Returns:
-        bets_df: One row per bet slip
-        legs_df: One row per leg (for parlays)
+    bet_id_match = COUPON_PATTERN.search(text_blob)
+    bet_id = bet_id_match.group(1) if bet_id_match else None
+
+    placed_at = _parse_datetime(text_blob)
+
+    bet_type_match = HEADER_PATTERN.search(lines[0]) if lines else None
+    bet_type = bet_type_match.group(1).capitalize() if bet_type_match else None
+    if bet_type and bet_type.lower().startswith("tupla"):
+        bet_type = "Tupla"
+
+    status_match = STATUS_PATTERN.search(text_blob)
+    status = status_match.group(1).capitalize() if status_match else None
+
+    stake_match = re.search(r"Panos:\s*€?([0-9.,]+)", text_blob)
+    stake = _normalize_number(stake_match.group(1)) if stake_match else None
+
+    payout_match = re.search(r"Voitto:\s*€?([0-9.,]+)", text_blob)
+    payout = _normalize_number(payout_match.group(1)) if payout_match else None
+
+    odds_match = re.search(r"Kertoimet:\s*([0-9.,]+)", text_blob)
+    if not odds_match:
+        odds_match = re.search(r"@\s*([0-9.,]+)", text_blob)
+    odds = _normalize_number(odds_match.group(1)) if odds_match else None
+
+    legs = _parse_legs(lines, bet_id, odds)
+
+    return ParsedBet(
+        bet_id=bet_id,
+        placed_at=placed_at,
+        bet_type=bet_type,
+        status=status,
+        stake=stake,
+        odds=odds,
+        payout=payout,
+        legs=legs,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+
+def parse_unibet_paste(raw_text: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """Parse Unibet bet history pasted as raw text.
+
+    Returns two dataframes: ``bets`` (one per coupon) and ``legs`` (one per
+    selection). These frames are intentionally minimal so they can be converted
+    to the canonical Coolbet-like schema with :func:`normalize_unibet_paste`.
     """
 
     cleaned = raw_text.replace("\r\n", "\n")
     cleaned = re.sub(r"(\d),(?=\d{1,2}\b)", r"\1.", cleaned)
 
-    bet_sections = _split_bets(cleaned)
-    bets: List[dict] = []
-    legs: List[dict] = []
-
-    for section in bet_sections:
-        bet_id_match = re.search(r"Kuponkitunnus:\s*(\d+)", section)
-        bet_id = bet_id_match.group(1) if bet_id_match else None
-
-        placed_at = _extract_datetime(section)
-
-        status_match = re.search(r"(Voitettu|Vireill[aä]|H[aä]vitty|Peruttu)", section, re.IGNORECASE)
-        status = status_match.group(1).capitalize() if status_match else None
-
-        bet_type_match = re.search(r"(Single|Tupla|Tripla|Parlay|Tupla|Tuplavoitettu)", section, re.IGNORECASE)
-        bet_type = bet_type_match.group(1).capitalize() if bet_type_match else None
-        if bet_type and bet_type.lower().startswith("tupla"):
-            bet_type = "Tupla"
-
-        stake_match = re.search(r"Panos:\s*€?([0-9.,]+)", section)
-        stake = _normalize_number(stake_match.group(1)) if stake_match else None
-
-        odds_match = re.search(r"Kertoimet:\s*([0-9.,]+)", section)
-        if not odds_match:
-            odds_match = re.search(r"@\s*([0-9.,]+)", section)
-        odds = _normalize_number(odds_match.group(1)) if odds_match else None
-
-        payout_match = re.search(r"Voitto:\s*€?([0-9.,]+)", section)
-        payout = _normalize_number(payout_match.group(1)) if payout_match else None
-
-        lines = [ln.strip() for ln in section.splitlines() if ln.strip()]
-        section_legs = _parse_legs(lines, bet_id or "", odds)
-        leg_count = len(section_legs)
-
-        if not bet_type:
-            if leg_count > 1:
-                bet_type = "Parlay"
-            else:
-                bet_type = "Single"
-
-        bets.append(
-            {
-                "bet_id": bet_id,
-                "bookmaker": "Unibet",
-                "placed_at": placed_at,
-                "bet_type": bet_type,
-                "stake": stake,
-                "odds": odds,
-                "payout": payout,
-                "status": status,
-                "leg_count": leg_count,
-            }
-        )
-        legs.extend(section_legs)
+    sections = _split_sections(cleaned)
+    parsed_bets = [_parse_section(section) for section in sections]
 
     bets_df = pd.DataFrame(
-        bets,
-        columns=[
-            "bet_id",
-            "bookmaker",
-            "placed_at",
-            "bet_type",
-            "stake",
-            "odds",
-            "payout",
-            "status",
-            "leg_count",
-        ],
+        [
+            {
+                "bet_id": bet.bet_id,
+                "bookmaker": "Unibet",
+                "placed_at": bet.placed_at,
+                "bet_type": bet.bet_type,
+                "stake": bet.stake,
+                "odds": bet.odds,
+                "payout": bet.payout,
+                "status": bet.status,
+                "leg_count": len(bet.legs),
+            }
+            for bet in parsed_bets
+        ]
     )
-    legs_df = pd.DataFrame(legs, columns=["bet_id", "event", "market", "selection", "odds"])
 
-    # ensure datetime is UTC-aware
+    all_legs = [leg for bet in parsed_bets for leg in bet.legs]
+    legs_df = pd.DataFrame(all_legs, columns=["bet_id", "event", "market", "selection", "odds"])
+
     if not bets_df.empty:
         bets_df["placed_at"] = pd.to_datetime(bets_df["placed_at"], utc=True, errors="coerce")
+
     return bets_df, legs_df
 
 
@@ -250,7 +294,6 @@ def normalize_unibet_paste(raw_text: str) -> pd.DataFrame:
         "parlay": "parlay",
     }
 
-    # Attach a lightweight market label from the first leg when available
     market_lookup = {}
     if not legs_df.empty:
         legs_df = legs_df.copy()
