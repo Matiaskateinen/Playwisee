@@ -161,6 +161,7 @@ def parse_unibet_paste(raw_text: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
                 "odds": odds,
                 "payout": payout,
                 "status": status,
+                "leg_count": leg_count,
             }
         )
         legs.extend(section_legs)
@@ -176,6 +177,7 @@ def parse_unibet_paste(raw_text: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
             "odds",
             "payout",
             "status",
+            "leg_count",
         ],
     )
     legs_df = pd.DataFrame(legs, columns=["bet_id", "event", "market", "selection", "odds"])
@@ -232,6 +234,7 @@ def normalize_unibet_paste(raw_text: str) -> pd.DataFrame:
                 "wins": pd.to_numeric(bet.get("payout"), errors="coerce"),
                 "odds": pd.to_numeric(bet.get("odds"), errors="coerce"),
                 "market name": market_lookup.get(bet.get("bet_id"), None),
+                "legs": pd.to_numeric(bet.get("leg_count"), errors="coerce"),
             }
         )
 
@@ -245,7 +248,7 @@ def normalize_unibet_paste(raw_text: str) -> pd.DataFrame:
     normalized["ticket type"] = normalized["ticket type"].fillna("single")
     normalized["product"] = normalized["product"].fillna("unibet")
 
-    for col, default in [("bets", 0.0), ("wins", 0.0), ("odds", 1.0)]:
+    for col, default in [("bets", 0.0), ("wins", 0.0), ("odds", 1.0), ("legs", 1)]:
         normalized[col] = pd.to_numeric(normalized[col], errors="coerce").fillna(default)
 
     if "market name" in normalized.columns:
