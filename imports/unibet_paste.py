@@ -41,16 +41,20 @@ def _split_bets(raw_text: str) -> List[str]:
     # keep any header text with the first coupon
     parts = re.split(r"(?=Kuponkitunnus:\s*\d+)", raw_text)
     sections: List[str] = []
-    buffer = ""
+    carryover = ""
+
     for part in parts:
         if re.search(r"Kuponkitunnus:\s*\d+", part):
-            sections.append(buffer + part)
-            buffer = ""
+            sections.append((carryover + part).strip())
+            carryover = ""
         else:
-            buffer += part
-    if buffer and sections:
-        sections[0] = buffer + sections[0]
-    return [s.strip() for s in sections if s.strip()]
+            carryover += part
+
+    # If we had header text but no coupon, ignore. If coupons exist, prepend the header.
+    if carryover and sections:
+        sections[0] = (carryover + "\n" + sections[0]).strip()
+
+    return [s for s in sections if s]
 
 
 def _parse_legs(lines: List[str], bet_id: str, overall_odds: float | None) -> List[dict]:
@@ -72,8 +76,13 @@ def _parse_legs(lines: List[str], bet_id: str, overall_odds: float | None) -> Li
                 event = follow
                 break
 
-        odds_match = re.search(r"([0-9]+[.,][0-9]+)", " ".join(lines[idx : idx + 3]))
+        window_text = " ".join(lines[idx : idx + 5])
+        odds_match = re.search(r"([0-9]+[.,][0-9]+)", window_text)
         leg_odds = _normalize_number(odds_match.group(1)) if odds_match else None
+
+        # Ignore metadata lines that aren't tied to a selection (e.g., score lines)
+        if not event and leg_odds is None:
+            continue
 
         legs.append(
             {
