@@ -38,21 +38,50 @@ def _extract_datetime(text: str) -> pd.Timestamp | None:
 
 
 def _split_bets(raw_text: str) -> List[str]:
-    # keep any header text with the first coupon
-    parts = re.split(r"(?=Kuponkitunnus:\s*\d+)", raw_text)
+    """
+    Split the pasted text into individual bet sections.
+
+    Unibet pastes list a bet summary (e.g. ``Single`` header and odds) before
+    the ``Kuponkitunnus`` line of that bet. We therefore stream through the
+    lines and treat either a bet header *or* a coupon ID as the start of a new
+    section, carrying any leading summary lines forward to the next coupon.
+    """
+
+    header_pattern = re.compile(r"^(Single|Tupla|Tripla|Parlay|Tuplavoitettu)\b", re.IGNORECASE)
+    coupon_pattern = re.compile(r"^Kuponkitunnus:\s*\d+", re.IGNORECASE)
+
     sections: List[str] = []
-    carryover = ""
+    current: List[str] = []
+    pending: List[str] = []  # summary lines that should attach to the next coupon
 
-    for part in parts:
-        if re.search(r"Kuponkitunnus:\s*\d+", part):
-            sections.append((carryover + part).strip())
-            carryover = ""
+    for raw_line in raw_text.splitlines():
+        line = raw_line.rstrip()
+        if not line:
+            continue
+
+        if coupon_pattern.match(line):
+            if current:
+                sections.append("\n".join(current).strip())
+            current = pending + [line]
+            pending = []
+            continue
+
+        if header_pattern.match(line):
+            if current:
+                sections.append("\n".join(current).strip())
+                current = []
+            pending = [line]
+            continue
+
+        if current:
+            current.append(line)
         else:
-            carryover += part
+            pending.append(line)
 
-    # If we had header text but no coupon, ignore. If coupons exist, prepend the header.
-    if carryover and sections:
-        sections[0] = (carryover + "\n" + sections[0]).strip()
+    if current:
+        sections.append("\n".join(current).strip())
+    elif pending:
+        sections.append("\n".join(pending).strip())
 
     return [s for s in sections if s]
 
