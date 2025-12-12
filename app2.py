@@ -3,6 +3,8 @@ import pandas as pd
 import numpy as np
 import altair as alt
 
+from imports.coolbet import NormalizationError, normalize_coolbet_data
+
 st.set_page_config(page_title="PlayWise Pilot", layout="wide")
 
 pd.options.display.float_format = "{:.2f}".format
@@ -461,43 +463,12 @@ if uploaded_file is None:
     st.stop()
 
 # ---------- DATA PROCESSING ----------
-df = safe_read_excel(uploaded_file)
-required_cols = {"date", "rank", "ticket type", "product", "bets", "wins", "odds"}
-
-if not required_cols.issubset(df.columns):
-    st.error("Missing required columns in Excel. Need at least: date, rank, ticket type, product, bets, wins, odds.")
+df_raw = safe_read_excel(uploaded_file)
+try:
+    df = normalize_coolbet_data(df_raw)
+except NormalizationError as exc:  # pragma: no cover - streamlit surface
+    st.error(str(exc))
     st.stop()
-
-df["ticket type"] = df["ticket type"].astype(str)
-df["product"] = df["product"].astype(str)
-df["date"] = pd.to_datetime(df["date"].ffill())
-df["rank"] = df["rank"].ffill()
-
-if "market name" in df.columns:
-    def classify_market(m):
-        m = str(m).lower()
-        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
-            return "Over/Under Goals"
-        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
-            return "Player Points"
-        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
-            return "Match Results"
-        return "Other Markets"
-
-    df["market_group"] = df["market name"].apply(classify_market)
-
-if "market name" in df.columns:
-    def classify_market(m):
-        m = str(m).lower()
-        if any(k in m for k in ["over/under goals", "over under goals", "total goals", "goal line", "goals line", "goals over", "goals under"]):
-            return "Over/Under Goals"
-        if any(k in m for k in ["player", "points", "pts", "rebounds", "assists", "steals", "blocks", "shots"]):
-            return "Player Points"
-        if any(k in m for k in ["1x2", "match result", "full time result", "moneyline", "winner", "to win"]):
-            return "Match Results"
-        return "Other Markets"
-
-    df["market_group"] = df["market name"].apply(classify_market)
 
 if "market name" in df.columns:
     def classify_market(m):
