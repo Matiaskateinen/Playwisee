@@ -506,13 +506,14 @@ if "market name" in df.columns:
 
     df["market_group"] = df["market name"].apply(classify_market)
 
+legs_agg = ("legs", "max") if "legs" in df.columns else ("odds", "size")
 df_grouped = (
     df.groupby(["date", "rank", "ticket type", "product"], as_index=False)
       .agg(
           bets=("bets", "sum"),
           wins=("wins", "sum"),
           total_odds=("odds", np.prod),
-          legs=("odds", "size")
+          legs=legs_agg
       )
 )
 
