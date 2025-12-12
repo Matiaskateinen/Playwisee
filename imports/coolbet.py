@@ -47,34 +47,6 @@ def _apply_aliases(df: pd.DataFrame) -> pd.DataFrame:
     return df.rename(columns=rename_map)
 
 
-def _collapse_duplicate_columns(df: pd.DataFrame) -> pd.DataFrame:
-    """Merge duplicate columns by forward-filling across them.
-
-    Coolbet exports sometimes include both a canonical column (e.g. "rank") and
-    a synonymous header (e.g. "result"). When normalized, both can map to the
-    same canonical name, leaving duplicate column labels. Pandas then treats
-    column selection as 2D, causing groupby to fail with "not 1-dimensional".
-    This helper collapses duplicates to a single Series, preferring the first
-    non-null value from left to right.
-    """
-
-    df = df.copy()
-    seen = set()
-
-    for col in df.columns:
-        if col in seen:
-            continue
-
-        duplicates = [c for c in df.columns if c == col]
-        if len(duplicates) > 1:
-            merged = df[duplicates].bfill(axis=1).iloc[:, 0]
-            df = df.drop(columns=duplicates).assign(**{col: merged})
-
-        seen.add(col)
-
-    return df
-
-
 def normalize_coolbet_data(df: pd.DataFrame) -> pd.DataFrame:
     """Return a dataframe with canonical PlayWise columns.
 
@@ -88,7 +60,6 @@ def normalize_coolbet_data(df: pd.DataFrame) -> pd.DataFrame:
     normalized = df.copy()
     normalized.columns = [str(col).strip().lower() for col in normalized.columns]
     normalized = _apply_aliases(normalized)
-    normalized = _collapse_duplicate_columns(normalized)
 
     missing = REQUIRED_COLUMNS - set(normalized.columns)
     if missing:
