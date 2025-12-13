@@ -6,14 +6,14 @@ def inject_global_css() -> None:
         """
 <style>
 :root {
-    --bg: #0a0c14;
-    --card: #111628;
-    --stroke: #20263a;
-    --muted: #aab7cc;
-    --text: #f0f4fb;
-    --accent: #58e2c9;
-    --glow-blue: rgba(0, 157, 255, 0.08);
-    --glow-green: rgba(65, 240, 192, 0.1);
+    --bg: #060910;
+    --card: #0b101a;
+    --stroke: #1c2635;
+    --muted: #9fb2c7;
+    --text: #eef2f7;
+    --accent: #46e3c4;
+    --glow-blue: rgba(0, 157, 255, 0.1);
+    --glow-green: rgba(65, 240, 192, 0.14);
 }
 html, body, [class*="css"] {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -28,9 +28,9 @@ html, body, [class*="css"] {
 .main {
     position: relative;
     overflow: hidden;
-    background: radial-gradient(circle at 20% 20%, rgba(65, 240, 192, 0.04), transparent 28%),
-                radial-gradient(circle at 82% 4%, rgba(0, 157, 255, 0.04), transparent 24%),
-                linear-gradient(135deg, #0a0c14 0%, #0c1020 48%, #0a0d18 100%);
+    background: radial-gradient(circle at 20% 20%, rgba(65, 240, 192, 0.06), transparent 26%),
+                radial-gradient(circle at 82% 4%, rgba(0, 157, 255, 0.06), transparent 24%),
+                linear-gradient(135deg, #060910 0%, #070b13 50%, #05070d 100%);
 }
 .main:before {
     content: '';
@@ -39,11 +39,11 @@ html, body, [class*="css"] {
     background-image: linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
                       linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
     background-size: 78px 78px;
-    opacity: 0.12;
+    opacity: 0.18;
     pointer-events: none;
     z-index: 0;
-    transform: perspective(1100px) rotateX(68deg) rotateZ(6deg) translate3d(-2%, -6%, 0);
-    animation: gridDrift 48s ease-in-out infinite alternate;
+    transform: perspective(1100px) rotateX(70deg) rotateZ(8deg) translate3d(-4%, -6%, 0);
+    animation: gridDrift 42s ease-in-out infinite alternate;
 }
 .main:after {
     content: '';
@@ -56,11 +56,11 @@ html, body, [class*="css"] {
         radial-gradient(closest-side at 46% 80%, rgba(255, 255, 255, 0.05), transparent 60%);
     filter: blur(10px);
     mix-blend-mode: screen;
-    opacity: 0.26;
+    opacity: 0.4;
     pointer-events: none;
     z-index: 0;
-    transform: perspective(1400px) rotateX(65deg) rotateZ(-2deg) translate3d(0, -5%, 0);
-    animation: warpGlow 54s ease-in-out infinite alternate;
+    transform: perspective(1400px) rotateX(66deg) rotateZ(-4deg) translate3d(0, -6%, 0);
+    animation: warpGlow 48s ease-in-out infinite alternate;
 }
 @keyframes gridDrift {
     0% {
@@ -83,9 +83,9 @@ html, body, [class*="css"] {
 .pw-surface {
     position: relative;
     background: linear-gradient(160deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 18px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.38);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
     transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
     overflow: hidden;
 }
@@ -95,9 +95,9 @@ html, body, [class*="css"] {
 .element-container:has(div[data-testid="metric-container"]),
 div[data-testid="dataframe"] {
     border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.06);
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
-    box-shadow: 0 14px 38px rgba(0,0,0,0.38);
+    box-shadow: 0 18px 48px rgba(0,0,0,0.42);
 }
 .pw-surface--focus {
     border-color: rgba(70, 227, 196, 0.4);
@@ -111,7 +111,7 @@ div[data-testid="dataframe"] {
 [data-testid="stSidebar"] {
     background: linear-gradient(180deg, rgba(11,16,26,0.96), rgba(6,9,15,0.98));
     border-right: 1px solid var(--stroke);
-    box-shadow: 6px 0 22px rgba(0,0,0,0.32);
+    box-shadow: 6px 0 26px rgba(0,0,0,0.35);
     padding-top: 14px;
 }
 [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
@@ -286,8 +286,8 @@ h3, h4 {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
     border-radius: 18px;
     padding: 24px 26px 22px 26px;
-    border: 1px solid rgba(255,255,255,0.07);
-    box-shadow: 0 18px 44px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.45);
 }
 .hero-card:before,
 .hero-card:after {
@@ -341,8 +341,8 @@ h3, h4 {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
     border-radius: 18px;
     padding: 16px 16px 12px 16px;
-    border: 1px solid rgba(255,255,255,0.07);
-    box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
     transition: all 0.12s ease;
 }
 .element-container:has(div[data-testid="metric-container"]):hover {
@@ -370,10 +370,10 @@ h3, h4 {
 
 .section-card {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 18px;
     padding: 16px 16px 12px 16px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.38);
+    box-shadow: 0 18px 48px rgba(0,0,0,0.42);
 }
 .section-card .stExpander {
     border: 1px solid rgba(255,255,255,0.06) !important;
@@ -393,10 +393,10 @@ h3, h4 {
 div[data-testid="dataframe"] {
     border-radius: 18px;
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.06);
     margin-top: 12px;
-    background: rgba(14, 18, 32, 0.94);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.32);
+    background: rgba(11, 16, 26, 0.92);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.35);
 }
 .stDataFrame table {
     border-spacing: 0;
@@ -446,10 +446,10 @@ div[data-testid="dataframe"] {
     flex: 1 1 200px;
     min-width: 200px;
     background: linear-gradient(160deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.06);
     border-radius: 18px;
     padding: 14px 16px 12px 16px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.36);
+    box-shadow: 0 14px 38px rgba(0,0,0,0.4);
 }
 .digest-label {
     font-size: 0.82rem;
@@ -501,91 +501,59 @@ div[data-testid="dataframe"] {
     border-color: rgba(70, 227, 196, 0.65);
     background: rgba(70, 227, 196, 0.06);
 }
-
-/* Profile view */
-.profile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 6px 0 14px 0;
-}
-.profile-title {
-    margin: 0;
-}
-.profile-subtitle {
-    margin: 2px 0 0 0;
-    color: var(--muted);
-    font-size: 0.98rem;
-    letter-spacing: 0.01em;
-}
-.profile-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 9px 16px;
-    border-radius: 999px;
-    background: linear-gradient(120deg, rgba(88, 226, 201, 0.12), rgba(85, 133, 255, 0.08));
-    border: 1px solid rgba(255,255,255,0.12);
-    color: var(--text);
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    white-space: nowrap;
-}
-.profile-card {
-    background: radial-gradient(120% 120% at 10% 10%, rgba(88, 226, 201, 0.08), rgba(88, 226, 201, 0)),
-                radial-gradient(140% 120% at 90% 0%, rgba(85, 133, 255, 0.08), rgba(85, 133, 255, 0)),
-                linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0)), var(--card);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 18px;
-    padding: 18px 18px 16px 18px;
-    box-shadow: 0 14px 34px rgba(0,0,0,0.36);
-}
-.profile-card--wide {
-    padding: 18px 20px;
-}
-.profile-card__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-.profile-card__title {
-    margin: 2px 0 0 0;
-}
-.eyebrow {
+.stat-label {
+    display: block;
     font-size: 0.75rem;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
+    margin-bottom: 4px;
 }
-.mini-chip {
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    font-weight: 650;
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
     color: var(--text);
+    line-height: 1.2;
 }
-.profile-main-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.45fr) minmax(260px, 0.8fr);
-    gap: 16px;
+.stat-value--pos { color: #8af2d9; }
+.stat-value--neg { color: #ff9c9c; }
+.stat-help {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.9rem;
 }
-.profile-stats {
+.card-row {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 12px;
+    margin-top: 12px;
 }
-.stat-grid {
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+}
+.stat-value--pos { color: #8af2d9; }
+.stat-value--neg { color: #ff9c9c; }
+.stat-help {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+.card-row {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-.stat-item {
-    padding: 12px 12px 10px 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.02);
+    margin-top: 12px;
 }
 .stat-label {
     display: block;

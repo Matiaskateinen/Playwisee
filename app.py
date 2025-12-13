@@ -297,8 +297,6 @@ if nav_choice == "Profile":
     win_rate = round((df_filtered["wins"] > 0).mean() * 100, 1)
     loss_rate = round(100 - win_rate, 1)
     total_bets_count = len(df_filtered_raw)
-    singles_share = (num_singles / total_bets_count * 100) if total_bets_count else 0
-    combos_share = (num_combos / total_bets_count * 100) if total_bets_count else 0
     time_span = "–"
     if pd.notna(date_start) and pd.notna(date_end):
         time_span = f"{date_start.strftime('%b %Y')} – {date_end.strftime('%b %Y')}"
@@ -321,82 +319,43 @@ if nav_choice == "Profile":
 
     st.markdown(
         """
-        <div class="profile-card profile-card--wide">
-            <div class="profile-card__header">
-                <div>
-                    <div class="eyebrow">Profile Summary</div>
-                    <h4 class="profile-card__title">Stats overview</h4>
+        <div class="profile-card">
+            <h4 style="margin:4px 0 12px 0;">Profile Summary</h4>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">ROI</span>
+                    <div class="{roi_class}">{roi_total:.2f}%</div>
+                    <div class="stat-help">Return across all tracked stakes</div>
                 </div>
-                <div class="mini-chip">{total_bets_count} bets</div>
-            </div>
-            <div class="profile-main-grid">
-                <div class="profile-stats">
-                    <div class="stat-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">ROI</span>
-                            <div class="{roi_class}">{roi_total:.2f}%</div>
-                            <div class="stat-help">Return across all tracked stakes</div>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Net P/L</span>
-                            <div class="{pl_class}">{total_profit:.2f} €</div>
-                            <div class="stat-help">Total profit/loss to date</div>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Avg stake</span>
-                            <div class="stat-value">{avg_bet:.2f} €</div>
-                            <div class="stat-help">Mean stake per ticket</div>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Total bets</span>
-                            <div class="stat-value">{total_bets_count}</div>
-                            <div class="stat-help">Tickets tracked in this span</div>
-                        </div>
-                    </div>
-                    <div class="profile-bars">
-                        <div class="bar-row">
-                            <div class="bar-label">Singles vs Combos</div>
-                            <div class="bar-track">
-                                <span class="bar-fill bar-fill--primary" style="width:{singles_share:.1f}%;"></span>
-                                <span class="bar-fill bar-fill--secondary" style="width:{combos_share:.1f}%;"></span>
-                            </div>
-                            <div class="bar-legend">
-                                <span>Singles {num_singles}</span>
-                                <span>Combos {num_combos}</span>
-                            </div>
-                        </div>
-                        <div class="bar-row">
-                            <div class="bar-label">Win / Loss</div>
-                            <div class="bar-track">
-                                <span class="bar-fill bar-fill--primary" style="width:{win_rate:.1f}%;"></span>
-                                <span class="bar-fill bar-fill--negative" style="width:{loss_rate:.1f}%;"></span>
-                            </div>
-                            <div class="bar-legend">
-                                <span>Win {win_rate:.1f}%</span>
-                                <span>Loss {loss_rate:.1f}%</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="stat-item">
+                    <span class="stat-label">Net P/L</span>
+                    <div class="{pl_class}">{total_profit:.2f} €</div>
+                    <div class="stat-help">Total profit/loss to date</div>
                 </div>
-                <div class="profile-rings">
-                    <div class="ring-card">
-                        <div class="ring" style="--percent:{win_rate};">
-                            <div class="ring__center">
-                                <div class="ring__value">{win_rate:.0f}%</div>
-                                <div class="ring__label">Win rate</div>
-                            </div>
-                        </div>
-                        <div class="ring-foot">Solid momentum</div>
-                    </div>
-                    <div class="ring-card">
-                        <div class="ring ring--accent" style="--percent:{max(min(roi_total,100),0)};">
-                            <div class="ring__center">
-                                <div class="ring__value">{roi_total:.0f}%</div>
-                                <div class="ring__label">ROI</div>
-                            </div>
-                        </div>
-                        <div class="ring-foot">Return efficiency</div>
-                    </div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg stake</span>
+                    <div class="stat-value">{avg_bet:.2f} €</div>
+                    <div class="stat-help">Mean stake per ticket</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total bets</span>
+                    <div class="stat-value">{total_bets_count}</div>
+                    <div class="stat-help">Tickets tracked in this span</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Win rate</span>
+                    <div class="stat-value">{win_rate:.1f}%</div>
+                    <div class="stat-help">Share of tickets that won</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Singles / Combos</span>
+                    <div class="stat-value">{num_singles} / {num_combos}</div>
+                    <div class="stat-help">Balance of bet types</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Time span</span>
+                    <div class="stat-value">{time_span}</div>
+                    <div class="stat-help">Range of filtered data</div>
                 </div>
             </div>
         </div>
@@ -411,9 +370,6 @@ if nav_choice == "Profile":
             num_singles=num_singles,
             num_combos=num_combos,
             time_span=time_span,
-            singles_share=singles_share,
-            combos_share=combos_share,
-            loss_rate=loss_rate,
         ),
         unsafe_allow_html=True,
     )
