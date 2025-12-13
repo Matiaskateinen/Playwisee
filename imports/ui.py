@@ -501,53 +501,32 @@ div[data-testid="dataframe"] {
     border-color: rgba(70, 227, 196, 0.65);
     background: rgba(70, 227, 196, 0.06);
 }
-
-/* Profile view */
-.profile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 6px 0 14px 0;
-}
-.profile-title {
-    margin: 0;
-}
-.profile-subtitle {
-    margin: 2px 0 0 0;
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--muted);
-    font-size: 0.98rem;
-    letter-spacing: 0.01em;
+    margin-bottom: 4px;
 }
-.profile-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
     color: var(--text);
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    white-space: nowrap;
+    line-height: 1.2;
 }
-.profile-card {
-    background: linear-gradient(160deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 18px;
-    padding: 16px 18px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+.stat-value--pos { color: #8af2d9; }
+.stat-value--neg { color: #ff9c9c; }
+.stat-help {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.9rem;
 }
-.stat-grid {
+.card-row {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-.stat-item {
-    padding: 12px 12px 10px 12px;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.02);
+    margin-top: 12px;
 }
 .stat-label {
     display: block;
