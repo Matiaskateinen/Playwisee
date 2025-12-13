@@ -8,12 +8,35 @@ from imports.unibet_paste import normalize_unibet_paste, parse_unibet_paste
 
 st.set_page_config(page_title="PlayWise Pilot", layout="wide")
 
+# Shared helpers -------------------------------------------------------------
+def parse_unibet_into_session(raw_text: str, button_key: str) -> None:
+    """Parse Unibet freeform paste content and store it into session state."""
+
+    if st.button("Parse Unibet paste", key=button_key):
+        bets_df, legs_df = parse_unibet_paste(raw_text)
+        st.markdown("**Parsed bets (Unibet)**")
+        st.dataframe(bets_df)
+        st.markdown("**Parsed legs (Unibet)**")
+        st.dataframe(legs_df)
+        normalized_unibet = normalize_unibet_paste(raw_text)
+        st.session_state["parsed_unibet_df"] = normalized_unibet
+
+
 # Initialize session state slot for Unibet pastes to avoid NameError in downstream checks
 if "unibet_df" not in st.session_state:
     st.session_state["unibet_df"] = None
 
 if "parsed_unibet_df" not in st.session_state:
     st.session_state["parsed_unibet_df"] = None
+
+# Always-available data entry in sidebar so uploads are reachable after first load
+with st.sidebar:
+    st.markdown("#### Load data")
+    sidebar_upload = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"], key="sidebar_excel")
+    st.caption("Tip: export your betting history as .xlsx and drop it here.")
+    with st.expander("Or paste Unibet bet history", expanded=False):
+        raw_text_sidebar = st.text_area("Paste your Unibet bet history here", height=180, key="sidebar_unibet")
+        parse_unibet_into_session(raw_text_sidebar, "parse_unibet_paste_sidebar")
 
 pd.options.display.float_format = "{:.2f}".format
 
@@ -449,55 +472,60 @@ h3, h4 {
 """, unsafe_allow_html=True)
 
 st.markdown("<div class='page-wrap'>", unsafe_allow_html=True)
-hero_cols = st.columns([1.05, 0.95])
 
-with hero_cols[0]:
-    st.markdown(
-        """
-        <div class="hero-copy">
-            <div class="hero-pill">PlayWise · 1.022 </div>
-            <h1 style="margin-top:6px;">PlayWise</h1>
-            <p class="playwise-subtitle">Use your strengths, learn from your weaknesses.</p>
-            <h3 class="hero-headline">See what’s working — and what’s not</h3>
-            <p class="hero-description">Upload your bets to get ROI, profit trends and a profile of how you play. No tips, no picks — just the stats that show your edge.</p>
-            <ul class="hero-bullets">
-                <li>ROI & profit curve to show momentum</li>
-                <li>Strongest and weakest markets surfaced automatically</li>
-                <li>Single- vs combo-heavy profile at a glance</li>
-            </ul>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+parsed_unibet_df = st.session_state.get("parsed_unibet_df")
+uploaded_file = sidebar_upload
 
-with hero_cols[1]:
-    st.markdown("<div class='upload-col'>", unsafe_allow_html=True)
-    st.markdown(
-        """
-        <div class="upload-card">
-            <div class="upload-card__inner">
-                <div class="upload-card__title">Upload Sportsbook Excel</div>
-                <p class="upload-card__helper">.xlsx export from e.g. Coolbet or Veikkaus.</p>
-        """,
-        unsafe_allow_html=True,
-    )
-    uploaded_file = st.file_uploader("", type=["xlsx"])
-    st.caption("Tip: export your betting history as .xlsx and drop it here.")
-    with st.expander("Or paste Unibet bet history", expanded=False):
-        raw_text = st.text_area("Paste your Unibet bet history here", height=200)
-        if st.button("Parse Unibet paste", key="parse_unibet_paste"):
-            bets_df, legs_df = parse_unibet_paste(raw_text)
-            st.markdown("**Parsed bets (Unibet)**")
-            st.dataframe(bets_df)
-            st.markdown("**Parsed legs (Unibet)**")
-            st.dataframe(legs_df)
-            normalized_unibet = normalize_unibet_paste(raw_text)
-            st.session_state["parsed_unibet_df"] = normalized_unibet
-    st.markdown("</div></div>", unsafe_allow_html=True)
+show_hero = uploaded_file is None and parsed_unibet_df is None
+
+if show_hero:
+    hero_cols = st.columns([1.05, 0.95])
+
+    with hero_cols[0]:
+        st.markdown(
+            """
+            <div class="hero-copy">
+                <div class="hero-pill">PlayWise · 1.022 </div>
+                <h1 style="margin-top:6px;">PlayWise</h1>
+                <p class="playwise-subtitle">Use your strengths, learn from your weaknesses.</p>
+                <h3 class="hero-headline">See what’s working — and what’s not</h3>
+                <p class="hero-description">Upload your bets to get ROI, profit trends and a profile of how you play. No tips, no picks — just the stats that show your edge.</p>
+                <ul class="hero-bullets">
+                    <li>ROI & profit curve to show momentum</li>
+                    <li>Strongest and weakest markets surfaced automatically</li>
+                    <li>Single- vs combo-heavy profile at a glance</li>
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with hero_cols[1]:
+        st.markdown("<div class='upload-col'>", unsafe_allow_html=True)
+        st.markdown(
+            """
+            <div class="upload-card">
+                <div class="upload-card__inner">
+                    <div class="upload-card__title">Upload Sportsbook Excel</div>
+                    <p class="upload-card__helper">.xlsx export from e.g. Coolbet or Veikkaus.</p>
+            """,
+            unsafe_allow_html=True,
+        )
+        uploaded_file_hero = st.file_uploader("", type=["xlsx"], key="hero_excel")
+        st.caption("Tip: export your betting history as .xlsx and drop it here.")
+        with st.expander("Or paste Unibet bet history", expanded=False):
+            raw_text = st.text_area("Paste your Unibet bet history here", height=200, key="hero_unibet")
+            parse_unibet_into_session(raw_text, "parse_unibet_paste")
+        st.markdown("</div></div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        uploaded_file = sidebar_upload or uploaded_file_hero
+
     st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)
-st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
+    st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
+else:
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
 
 parsed_unibet_df = st.session_state.get("parsed_unibet_df")
 
