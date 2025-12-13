@@ -555,6 +555,124 @@ div[data-testid="dataframe"] {
     gap: 12px;
     margin-top: 12px;
 }
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+}
+.stat-value--pos { color: #8af2d9; }
+.stat-value--neg { color: #ff9c9c; }
+.stat-help {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+.profile-bars {
+    display: grid;
+    gap: 10px;
+    margin-top: 6px;
+}
+.bar-row {
+    display: grid;
+    gap: 6px;
+}
+.bar-label {
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+}
+.bar-track {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.bar-fill {
+    height: 100%;
+    display: block;
+}
+.bar-fill--primary { background: linear-gradient(90deg, #6cf0d6, #58e2c9); }
+.bar-fill--secondary { background: linear-gradient(90deg, #8694ff, #b19cff); }
+.bar-fill--negative { background: linear-gradient(90deg, #ff9898, #ff7f7f); }
+.bar-legend {
+    display: flex;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+.profile-rings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+.ring-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 12px;
+    text-align: center;
+    display: grid;
+    gap: 8px;
+}
+.ring {
+    --size: 140px;
+    width: var(--size);
+    height: var(--size);
+    border-radius: 50%;
+    background: conic-gradient(#58e2c9 calc(var(--percent) * 1%), rgba(255,255,255,0.08) 0);
+    display: grid;
+    place-items: center;
+    margin: 0 auto;
+    border: 10px solid rgba(255,255,255,0.03);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+}
+.ring--accent {
+    background: conic-gradient(#8ab9ff calc(var(--percent) * 1%), rgba(255,255,255,0.08) 0);
+}
+.ring__center {
+    background: rgba(0,0,0,0.35);
+    border-radius: 50%;
+    width: 70%;
+    height: 70%;
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+}
+.ring__value {
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+.ring__label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.ring-foot {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+.card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
 </style>
 """,
         unsafe_allow_html=True,
