@@ -301,50 +301,116 @@ if nav_choice == "Profile":
     if pd.notna(date_start) and pd.notna(date_end):
         time_span = f"{date_start.strftime('%b %Y')} – {date_end.strftime('%b %Y')}"
 
-    st.markdown("### Profile")
-    profile_cols = st.columns(3)
-    profile_cols[0].metric("Total bets", f"{total_bets_count}")
-    profile_cols[1].metric("Net P/L", f"{total_profit:.2f} €")
-    profile_cols[2].metric("ROI", f"{roi_total:.2f}%")
+    roi_class = "stat-value stat-value--pos" if roi_total >= 0 else "stat-value stat-value--neg"
+    pl_class = "stat-value stat-value--pos" if total_profit >= 0 else "stat-value stat-value--neg"
 
-    profile_cols_2 = st.columns(3)
-    profile_cols_2[0].metric("Avg stake", f"{avg_bet:.2f} €")
-    profile_cols_2[1].metric("Win rate", f"{win_rate:.1f}%")
-    profile_cols_2[2].metric("Time span", time_span)
+    st.markdown(
+        """
+        <div class="profile-header">
+            <div>
+                <h3 class="profile-title">Profile</h3>
+                <p class="profile-subtitle">Your betting style at a glance</p>
+            </div>
+            <div class="profile-chip">{time_span}</div>
+        </div>
+        """.format(time_span=time_span),
+        unsafe_allow_html=True,
+    )
 
-    digest_cols = st.columns([1.4, 1])
-
-    with digest_cols[0]:
-        st.markdown("#### Session digest")
-        st.markdown(
-            """
-            <div class="digest-row">
-                <div class="digest-chip">
-                    <div class="digest-label">Bets</div>
-                    <div class="digest-value">{rows}</div>
+    st.markdown(
+        """
+        <div class="profile-card">
+            <h4 style="margin:4px 0 12px 0;">Profile Summary</h4>
+            <div class="stat-grid">
+                <div class="stat-item">
+                    <span class="stat-label">ROI</span>
+                    <div class="{roi_class}">{roi_total:.2f}%</div>
+                    <div class="stat-help">Return across all tracked stakes</div>
                 </div>
-                <div class="digest-chip">
-                    <div class="digest-label">Period</div>
-                    <div class="digest-value">{start} → {end}</div>
+                <div class="stat-item">
+                    <span class="stat-label">Net P/L</span>
+                    <div class="{pl_class}">{total_profit:.2f} €</div>
+                    <div class="stat-help">Total profit/loss to date</div>
                 </div>
-                <div class="digest-chip">
-                    <div class="digest-label">Win / Loss</div>
-                    <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
+                <div class="stat-item">
+                    <span class="stat-label">Avg stake</span>
+                    <div class="stat-value">{avg_bet:.2f} €</div>
+                    <div class="stat-help">Mean stake per ticket</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total bets</span>
+                    <div class="stat-value">{total_bets_count}</div>
+                    <div class="stat-help">Tickets tracked in this span</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Win rate</span>
+                    <div class="stat-value">{win_rate:.1f}%</div>
+                    <div class="stat-help">Share of tickets that won</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Singles / Combos</span>
+                    <div class="stat-value">{num_singles} / {num_combos}</div>
+                    <div class="stat-help">Balance of bet types</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Time span</span>
+                    <div class="stat-value">{time_span}</div>
+                    <div class="stat-help">Range of filtered data</div>
                 </div>
             </div>
-            """.format(
-                rows=len(df_filtered),
-                start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
-                end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
-                win=win_rate,
-                loss=loss_rate,
-            ),
-            unsafe_allow_html=True,
-        )
+        </div>
+        """.format(
+            roi_class=roi_class,
+            pl_class=pl_class,
+            roi_total=roi_total,
+            total_profit=total_profit,
+            avg_bet=avg_bet,
+            total_bets_count=total_bets_count,
+            win_rate=win_rate,
+            num_singles=num_singles,
+            num_combos=num_combos,
+            time_span=time_span,
+        ),
+        unsafe_allow_html=True,
+    )
 
-    with digest_cols[1]:
-        st.markdown("#### Session notes")
-        st.write(f"🧮 Mean stake per ticket: **{avg_bet:.2f} €**")
+    st.markdown(
+        """
+        <div class="card-row">
+            <div class="profile-card">
+                <h4 style="margin:4px 0 12px 0;">Session digest</h4>
+                <div class="digest-row">
+                    <div class="digest-chip">
+                        <div class="digest-label">Bets</div>
+                        <div class="digest-value">{rows}</div>
+                    </div>
+                    <div class="digest-chip">
+                        <div class="digest-label">Period</div>
+                        <div class="digest-value">{start} → {end}</div>
+                    </div>
+                    <div class="digest-chip">
+                        <div class="digest-label">Win / Loss</div>
+                        <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-card">
+                <h4 style="margin:4px 0 12px 0;">Session notes</h4>
+                <ul style="margin: 0; padding-left: 18px; color: var(--text);">
+                    <li>Mean stake per ticket: <strong>{avg_bet:.2f} €</strong></li>
+                </ul>
+            </div>
+        </div>
+        """.format(
+            rows=len(df_filtered),
+            start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
+            end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
+            win=win_rate,
+            loss=loss_rate,
+            avg_bet=avg_bet,
+        ),
+        unsafe_allow_html=True,
+    )
 
 
 # ---------- INTERACTIVE SECTIONS ----------
