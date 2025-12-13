@@ -6,47 +6,6 @@ import altair as alt
 from imports.coolbet import NormalizationError, normalize_coolbet_data
 from imports.unibet_paste import normalize_unibet_paste, parse_unibet_paste
 
-REQUIRED_COLUMNS = {"date", "rank", "ticket type", "product", "bets", "wins", "odds"}
-
-
-def persist_loaded_df(df: pd.DataFrame, *, trigger_rerun: bool = True) -> bool:
-    """Persist a normalized dataframe into session state once it's valid."""
-
-    if df is None or df.empty:
-        st.warning("No rows found in the uploaded data. Add bets to see analytics.")
-        return False
-
-    missing = REQUIRED_COLUMNS - set(df.columns)
-    if missing:
-        st.error(
-            "Missing required columns: " + ", ".join(sorted(missing))
-        )
-        return False
-
-    already_loaded = st.session_state.get("data_loaded", False)
-    st.session_state["loaded_df"] = df
-    st.session_state["data_loaded"] = True
-
-    if trigger_rerun and not already_loaded:
-        st.experimental_rerun()
-
-    return True
-
-
-def reset_data_state() -> None:
-    for key in (
-        "loaded_df",
-        "parsed_unibet_df",
-        "unibet_df",
-        "data_loaded",
-        "sidebar_excel",
-        "hero_excel",
-        "sidebar_unibet",
-        "hero_unibet",
-    ):
-        st.session_state.pop(key, None)
-    st.experimental_rerun()
-
 st.set_page_config(page_title="PlayWise Pilot", layout="wide")
 
 # Shared helpers -------------------------------------------------------------
@@ -61,7 +20,6 @@ def parse_unibet_into_session(raw_text: str, button_key: str) -> None:
         st.dataframe(legs_df)
         normalized_unibet = normalize_unibet_paste(raw_text)
         st.session_state["parsed_unibet_df"] = normalized_unibet
-        persist_loaded_df(normalized_unibet)
 
 
 # Initialize session state slot for Unibet pastes to avoid NameError in downstream checks
@@ -71,17 +29,9 @@ if "unibet_df" not in st.session_state:
 if "parsed_unibet_df" not in st.session_state:
     st.session_state["parsed_unibet_df"] = None
 
-if "loaded_df" not in st.session_state:
-    st.session_state["loaded_df"] = None
-
-if "data_loaded" not in st.session_state:
-    st.session_state["data_loaded"] = False
-
 # Always-available data entry in sidebar so uploads are reachable after first load
 with st.sidebar:
     st.markdown("#### Load data")
-    if st.button("Reset / Upload new data", type="secondary"):
-        reset_data_state()
     sidebar_upload = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"], key="sidebar_excel")
     st.caption("Tip: export your betting history as .xlsx and drop it here.")
     with st.expander("Or paste Unibet bet history", expanded=False):
@@ -523,9 +473,10 @@ h3, h4 {
 
 st.markdown("<div class='page-wrap'>", unsafe_allow_html=True)
 
+parsed_unibet_df = st.session_state.get("parsed_unibet_df")
 uploaded_file = sidebar_upload
-uploaded_file_hero = None
-show_hero = not st.session_state.get("data_loaded", False)
+
+show_hero = uploaded_file is None and parsed_unibet_df is None
 
 if show_hero:
     hero_cols = st.columns([1.05, 0.95])
@@ -578,26 +529,19 @@ else:
 
 parsed_unibet_df = st.session_state.get("parsed_unibet_df")
 
-if not st.session_state.get("data_loaded", False):
-    if parsed_unibet_df is not None:
-        persist_loaded_df(parsed_unibet_df)
-    elif uploaded_file is not None:
-        df_raw = safe_read_excel(uploaded_file)
-        try:
-            df = normalize_coolbet_data(df_raw)
-        except NormalizationError as exc:  # pragma: no cover - streamlit surface
-            st.error(str(exc))
-            st.stop()
-        persist_loaded_df(df)
-
-if not st.session_state.get("data_loaded", False):
+if uploaded_file is None and parsed_unibet_df is None:
     st.stop()
 
-df = st.session_state.get("loaded_df")
-
-if df is None:
-    st.error("No data available. Please upload or paste your betting history.")
-    st.stop()
+# ---------- DATA PROCESSING ----------
+if parsed_unibet_df is not None:
+    df = parsed_unibet_df
+else:
+    df_raw = safe_read_excel(uploaded_file)
+    try:
+        df = normalize_coolbet_data(df_raw)
+    except NormalizationError as exc:  # pragma: no cover - streamlit surface
+        st.error(str(exc))
+        st.stop()
 
 if "market name" in df.columns:
     def classify_market(m):
