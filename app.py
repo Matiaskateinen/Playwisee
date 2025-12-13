@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
+import textwrap
 
 from imports.coolbet import NormalizationError, normalize_coolbet_data
 from imports.unibet_paste import normalize_unibet_paste, parse_unibet_paste
