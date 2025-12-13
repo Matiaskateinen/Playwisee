@@ -75,6 +75,12 @@ def normalize_coolbet_data(df: pd.DataFrame) -> pd.DataFrame:
         normalized["rank"] = "unknown"
 
     missing = REQUIRED_COLUMNS - set(normalized.columns)
+
+    # Some exports may omit total odds; treat it as neutral (1.0) instead of failing.
+    if "odds" in missing:
+        normalized["odds"] = 1.0
+        missing.remove("odds")
+
     if missing:
         raise NormalizationError(
             "Missing required columns after normalization: " + ", ".join(sorted(missing))

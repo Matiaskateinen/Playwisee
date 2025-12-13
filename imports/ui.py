@@ -528,6 +528,33 @@ div[data-testid="dataframe"] {
     gap: 12px;
     margin-top: 12px;
 }
+.stat-label {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+}
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+}
+.stat-value--pos { color: #8af2d9; }
+.stat-value--neg { color: #ff9c9c; }
+.stat-help {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+.card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
 </style>
 """,
         unsafe_allow_html=True,
