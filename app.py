@@ -5,7 +5,7 @@ import altair as alt
 
 from imports.coolbet import NormalizationError, normalize_coolbet_data
 from imports.unibet_paste import normalize_unibet_paste, parse_unibet_paste
-from imports.ui import (
+from imports.ui_helpers import (
     inject_global_css,
     open_page_wrap,
     close_page_wrap,
