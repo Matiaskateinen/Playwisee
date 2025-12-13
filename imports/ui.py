@@ -501,54 +501,6 @@ div[data-testid="dataframe"] {
     border-color: rgba(70, 227, 196, 0.65);
     background: rgba(70, 227, 196, 0.06);
 }
-
-/* Profile view */
-.profile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin: 6px 0 14px 0;
-}
-.profile-title {
-    margin: 0;
-}
-.profile-subtitle {
-    margin: 2px 0 0 0;
-    color: var(--muted);
-    font-size: 0.98rem;
-    letter-spacing: 0.01em;
-}
-.profile-chip {
-    display: inline-flex;
-    align-items: center;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.1);
-    color: var(--text);
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    white-space: nowrap;
-}
-.profile-card {
-    background: linear-gradient(160deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 18px;
-    padding: 16px 18px;
-    box-shadow: 0 16px 40px rgba(0,0,0,0.4);
-}
-.stat-grid {
-    display: grid;
-    gap: 12px;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-.stat-item {
-    padding: 12px 12px 10px 12px;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.02);
-}
 .stat-label {
     display: block;
     font-size: 0.75rem;
