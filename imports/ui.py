@@ -257,6 +257,65 @@ PROFILE_CSS = """
     text-transform: uppercase;
     font-size: 0.8rem;
 }
+.pw-compare-grid {
+    display: grid;
+    gap: 14px;
+}
+.pw-compare-row {
+    display: grid;
+    grid-template-columns: 1.2fr 2.4fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 12px 24px rgba(0,0,0,0.35);
+}
+.pw-compare-label {
+    display: grid;
+    gap: 3px;
+}
+.pw-compare-name {
+    font-weight: 800;
+    letter-spacing: 0.02em;
+}
+.pw-compare-note {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+.pw-compare-bar {
+    position: relative;
+    width: 100%;
+    height: 14px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+}
+.pw-compare-bar__fill {
+    position: absolute;
+    inset: 0;
+    width: 0;
+    background: linear-gradient(90deg, #64b5ff 0%, #7cf4d4 100%);
+    box-shadow: 0 0 12px rgba(100, 181, 255, 0.28);
+    border-radius: inherit;
+}
+.pw-compare-bar__thumb {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #0e1116;
+    border: 2px solid rgba(255,255,255,0.7);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+}
+.pw-compare-value {
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-align: right;
+}
 </style>
 """
 
