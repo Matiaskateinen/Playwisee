@@ -324,67 +324,63 @@ if nav_choice == "Profile":
         f"{num_singles} / {num_combos} ({singles_pct:.1f}%)" if singles_total > 0 else "—"
     )
 
-    stats_rows = [
-        {
-            "label": "Profit",
-            "value": f"{total_profit:.2f} €",
-            "fill": profit_fill,
-            "note": "Total profit across selected timeline",
-            "value_class": "is-pos" if total_profit >= 0 else "is-neg",
-        },
-        {
-            "label": "Average Bet",
-            "value": f"{avg_bet:.2f} €",
-            "fill": stake_fill,
-            "note": "Mean stake per ticket",
-            "value_class": "",
-        },
-        {
-            "label": "Average Odds",
-            "value": avg_odds_display if avg_odds is not None else "—",
-            "fill": odds_fill,
-            "note": "Average odds per ticket",
-            "value_class": "",
-        },
-        {
-            "label": "Singles vs Combos",
-            "value": single_combo_display,
-            "fill": singles_fill,
-            "note": "Share of singles in your mix",
-            "value_class": "",
-        },
+    stat_rows = [
+        {"label": "Profit", "value": f"{total_profit:.2f} €", "fill": profit_fill, "value_class": "is-pos" if total_profit >= 0 else "is-neg"},
+        {"label": "Avg Stake", "value": f"{avg_bet:.2f} €", "fill": stake_fill, "value_class": ""},
+        {"label": "Avg Odds", "value": avg_odds_display, "fill": odds_fill, "value_class": ""},
+        {"label": "Single vs Combo", "value": single_combo_display, "fill": singles_fill, "value_class": ""},
     ]
 
-    stats_rows_html = "".join(
+    stat_rows_html = "".join(
         [
             f"""
-            <div class="pw-compare-row">
-                <div class="pw-compare-label">
-                    <div class="pw-compare-name">{row['label']}</div>
-                    <div class="pw-compare-note">{row['note']}</div>
+            <div class=\"pw-stat-row\">
+                <div class=\"pw-stat-label\">{row['label']}</div>
+                <div class=\"pw-stat-bar\">
+                    <div class=\"pw-stat-bar__fill\" style=\"width:{row['fill']:.1f}%;\"></div>
                 </div>
-                <div class="pw-compare-bar">
-                    <div class="pw-compare-bar__fill" style="width:{row['fill']:.1f}%;"></div>
-                    <div class="pw-compare-bar__thumb" style="left:{row['fill']:.1f}%;"></div>
-                </div>
-                <div class="pw-compare-value {row['value_class']}">{row['value']}</div>
+                <div class=\"pw-stat-value {row['value_class']}\">{row['value']}</div>
             </div>
             """
-            for row in stats_rows
+            for row in stat_rows
+        ]
+    )
+
+    profit_color = "#46e3c4" if total_profit >= 0 else "#ff7b7b"
+    donut_cards = [
+        {"label": "Profit", "value": f"{total_profit:.2f} €", "percent": profit_fill, "accent": profit_color},
+        {"label": "Single share", "value": f"{singles_pct:.1f}%", "percent": singles_fill, "accent": "#46e3c4"},
+        {"label": "Avg stake", "value": f"{avg_bet:.2f} €", "percent": stake_fill, "accent": "#8ab9ff"},
+        {"label": "Avg odds", "value": avg_odds_display, "percent": odds_fill, "accent": "#f2c94c"},
+    ]
+
+    donut_grid = "".join(
+        [
+            f"""
+            <div class=\"pw-donut\">
+                <div class=\"pw-donut-ring\" style=\"--percent:{card['percent']:.1f}; --accent:{card['accent']};\"></div>
+                <div class=\"pw-donut-value\">{card['value']}</div>
+                <div class=\"pw-donut-label\">{card['label']}</div>
+            </div>
+            """
+            for card in donut_cards
         ]
     )
 
     profile_html = f"""
-    <div class="pw-profile-wrap">
-        <div class="pw-stats-title-row">
+    <div class=\"pw-profile-wrap\">
+        <div class=\"pw-stats-title-row\">
             <div>
-                <div class="pw-profile-title">Stats Overview</div>
-                <div class="pw-profile-subtitle">Based on selected timeline</div>
+                <div class=\"pw-profile-title\">Stats Overview</div>
+                <div class=\"pw-profile-subtitle\">Based on selected timeline</div>
             </div>
-            <div class="pw-chip">{time_span}</div>
+            <div class=\"pw-chip\">{time_span}</div>
         </div>
-        <div class="pw-stats-overview-card">
-            <div class="pw-compare-grid">{stats_rows_html}</div>
+        <div class=\"pw-stats-overview-card\">
+            <div class=\"pw-stats-overview-grid\">
+                <div class=\"pw-stat-list\">{stat_rows_html}</div>
+                <div class=\"pw-donut-grid\">{donut_grid}</div>
+            </div>
         </div>
     </div>
     """
