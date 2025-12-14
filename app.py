@@ -190,9 +190,9 @@ with top_cols[0]:
     total_profit = total_return - total_stake
     roi_total = (total_profit / total_stake * 100) if total_stake > 0 else 0.0
     avg_bet = float(df_filtered["bets"].mean())
-    num_bets = len(df_filtered)
     num_singles = int((df_filtered["ticket type"].str.lower() == "single").sum())
     num_combos = int((df_filtered["ticket type"].str.lower() == "combo").sum())
+    num_bets = num_singles + num_combos
 
     total_stake = round(total_stake, 2)
     total_return = round(total_return, 2)
@@ -437,34 +437,57 @@ if nav_choice == "Markets/Tickets":
     st.markdown("### Markets & Tickets")
     st.markdown("<div class='section-stack'>", unsafe_allow_html=True)
 
-    st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    with st.expander("📊 Markets — click to open full view", expanded=True):
-        st.markdown("#### Profitability By Market Group")
-        if by_market_group is not None and not by_market_group.empty:
-            display_by_market = by_market_group.copy()
-            display_by_market.index = display_by_market.index.map(lambda x: str(x).title())
-            display_by_market = display_by_market.rename(
-                columns={
-                    "stake": "Stake",
-                    "ret": "Return",
-                    "profit": "Profit",
-                    "roi": "ROI %",
-                }
-            )[ ["Stake", "Return", "Profit", "ROI %"] ]
-            formatter_market = {col: "{:.2f}" for col in display_by_market.select_dtypes(include="number").columns}
-            st.dataframe(
-                display_by_market.style
-                    .applymap(color_roi, subset=["ROI %"])
-                    .format(formatter_market),
-                use_container_width=True
-            )
-        else:
-            st.info("No market data found in this file (missing 'market name').")
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <div class="pw-compare-card">
+            <div class="pw-compare-head">
+                <div class="pw-compare-title">Markets</div>
+                <div class="pw-compare-meta">Profitability by market group</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    with st.expander("🎟 Tickets — click to open full view", expanded=True):
-        st.markdown("#### Live Vs Prematch")
+    if by_market_group is not None and not by_market_group.empty:
+        display_by_market = by_market_group.copy()
+        display_by_market.index = display_by_market.index.map(lambda x: str(x).title())
+        display_by_market = display_by_market.rename(
+            columns={
+                "stake": "Stake",
+                "ret": "Return",
+                "profit": "Profit",
+                "roi": "ROI %",
+            }
+        )[ ["Stake", "Return", "Profit", "ROI %"] ]
+        formatter_market = {col: "{:.2f}" for col in display_by_market.select_dtypes(include="number").columns}
+        st.dataframe(
+            display_by_market.style
+                .applymap(color_roi, subset=["ROI %"])
+                .format(formatter_market),
+            use_container_width=True
+        )
+    else:
+        st.info("No market data found in this file (missing 'market name').")
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <div class="pw-compare-card">
+            <div class="pw-compare-head">
+                <div class="pw-compare-title">Tickets</div>
+                <div class="pw-compare-meta">Live vs prematch and combo vs single splits</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    t_cols = st.columns(2)
+
+    with t_cols[0]:
+        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
         display_by_product = by_product.copy()
         display_by_product.index = display_by_product.index.map(lambda x: str(x).title())
         display_by_product = display_by_product.rename(
@@ -476,14 +499,17 @@ if nav_choice == "Markets/Tickets":
             }
         )[ ["Stake", "Return", "Profit", "ROI %"] ]
         formatter_prod = {col: "{:.2f}" for col in display_by_product.select_dtypes(include="number").columns}
+        st.markdown("#### Live vs Prematch")
         st.dataframe(
             display_by_product.style
                 .applymap(color_roi, subset=["ROI %"])
                 .format(formatter_prod),
             use_container_width=True
         )
+        st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("#### Combo Vs Single")
+    with t_cols[1]:
+        st.markdown("<div class='section-card'>", unsafe_allow_html=True)
         display_by_ticket = by_ticket.copy()
         display_by_ticket.index = display_by_ticket.index.map(lambda x: str(x).title())
         display_by_ticket = display_by_ticket.rename(
@@ -495,37 +521,49 @@ if nav_choice == "Markets/Tickets":
             }
         )[ ["Stake", "Return", "Profit", "ROI %"] ]
         formatter_ticket = {col: "{:.2f}" for col in display_by_ticket.select_dtypes(include="number").columns}
+        st.markdown("#### Combo vs Single")
         st.dataframe(
             display_by_ticket.style
                 .applymap(color_roi, subset=["ROI %"])
                 .format(formatter_ticket),
             use_container_width=True
         )
-    st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <div class="pw-compare-card">
+            <div class="pw-compare-head">
+                <div class="pw-compare-title">Raw Data</div>
+                <div class="pw-compare-meta">Ticket-level rollups for the selected range</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown("<div class='section-card'>", unsafe_allow_html=True)
-    with st.expander("📄 Raw Data — click to open full view", expanded=False):
-        display_grouped = df_grouped.copy()
-        display_grouped = display_grouped.rename(
-            columns={
-                "date": "Date",
-                "rank": "Rank",
-                "ticket type": "Ticket Type",
-                "product": "Product",
-                "bets": "Bets",
-                "wins": "Wins",
-                "total_odds": "Total Odds",
-                "legs": "Legs",
-            }
-        )
-        for col in display_grouped.select_dtypes(include="object").columns:
-            display_grouped[col] = display_grouped[col].astype(str).str.title()
-        num_cols_grouped = display_grouped.select_dtypes(include="number").columns
-        formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
-        st.dataframe(
-            display_grouped.style.format(formatter_grouped),
-            use_container_width=True
-        )
+    display_grouped = df_grouped.copy()
+    display_grouped = display_grouped.rename(
+        columns={
+            "date": "Date",
+            "rank": "Rank",
+            "ticket type": "Ticket Type",
+            "product": "Product",
+            "bets": "Bets",
+            "wins": "Wins",
+            "total_odds": "Total Odds",
+            "legs": "Legs",
+        }
+    )
+    for col in display_grouped.select_dtypes(include="object").columns:
+        display_grouped[col] = display_grouped[col].astype(str).str.title()
+    num_cols_grouped = display_grouped.select_dtypes(include="number").columns
+    formatter_grouped = {col: "{:.2f}" for col in num_cols_grouped}
+    st.dataframe(
+        display_grouped.style.format(formatter_grouped),
+        use_container_width=True
+    )
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
