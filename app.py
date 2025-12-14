@@ -266,32 +266,55 @@ if by_market_group is not None:
     by_market_group[by_market_num_cols] = by_market_group[by_market_num_cols].round(2)
 
 with top_cols[1]:
-    st.markdown("##### Quick profile")
     avg_legs = df_filtered["legs"].mean()
 
-    if avg_legs > 1.5:
-        st.write("🎲 You lean **combo-heavy** → higher variance, bigger swings.")
-    else:
-        st.write("🎯 You lean **single-heavy** → more stable, lower variance.")
+    style_value = "Combo-heavy" if avg_legs > 1.5 else "Single-heavy"
+    style_sub = "Higher variance, bigger swings" if avg_legs > 1.5 else "More stable, lower variance"
+
+    best_label = "—"
+    best_helper = "Add more bets to unlock market insights"
+    worst_label = "—"
+    worst_helper = "—"
 
     if by_market_group is not None and not by_market_group.empty:
         best = by_market_group["roi"].idxmax()
-        st.write(
-            f"📈 Strongest edge in **{str(best).title()}** "
-            f"({by_market_group.loc[best, 'roi']:.2f}%)."
-        )
+        best_label = str(best).title()
+        best_helper = f"ROI: {by_market_group.loc[best, 'roi']:.2f}%"
+
         losing = by_market_group[by_market_group["roi"] < 0]
         if not losing.empty:
             worst = by_market_group["roi"].idxmin()
-            st.write(
-                f"📉 Weakest in **{str(worst).title()}** "
-                f"({by_market_group.loc[worst, 'roi']:.2f}%)."
-            )
-    else:
-        st.write("ℹ️ Add more bets to unlock market insights.")
+            worst_label = str(worst).title()
+            worst_helper = f"ROI: {by_market_group.loc[worst, 'roi']:.2f}%"
+        else:
+            worst_helper = "No negative markets found yet"
 
-    if total_stake > 0:
-        st.write(f"💶 Total volume tracked: **{total_stake:.2f} €**")
+    quick_profile_html = f"""
+    <div class="pw-qp-grid">
+        <div class="pw-qp-card">
+            <div class="pw-qp-kicker">Style</div>
+            <div class="pw-qp-value">{style_value}</div>
+            <div class="pw-qp-sub">{style_sub}</div>
+        </div>
+        <div class="pw-qp-card">
+            <div class="pw-qp-kicker">Strongest edge</div>
+            <div class="pw-qp-value">{best_label}</div>
+            <div class="pw-qp-sub">{best_helper}</div>
+        </div>
+        <div class="pw-qp-card">
+            <div class="pw-qp-kicker">Weakest edge</div>
+            <div class="pw-qp-value">{worst_label}</div>
+            <div class="pw-qp-sub">{worst_helper}</div>
+        </div>
+        <div class="pw-qp-card">
+            <div class="pw-qp-kicker">Total volume</div>
+            <div class="pw-qp-value">{total_stake:.2f} €</div>
+            <div class="pw-qp-sub">Tracked in selected timeline</div>
+        </div>
+    </div>
+    """
+
+    st.markdown(quick_profile_html, unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 
