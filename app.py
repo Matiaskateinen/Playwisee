@@ -324,65 +324,53 @@ if nav_choice == "Profile":
         f"{num_singles} / {num_combos} ({singles_pct:.1f}%)" if singles_total > 0 else "—"
     )
 
-    progress_rows = [
-        ("Profit", profit_fill, f"{total_profit:.2f} €"),
-        ("Avg Stake", stake_fill, f"{avg_bet:.2f} €"),
-        ("Avg Odds", odds_fill, avg_odds_display if avg_odds is not None else "—"),
-        ("Singles vs Combos", singles_fill, single_combo_display),
-    ]
-
-    profit_color = "#7cf4d4" if total_profit >= 0 else "#ff9c9c"
-
-    donut_cards = [
+    stats_rows = [
         {
             "label": "Profit",
             "value": f"{total_profit:.2f} €",
-            "fill": clamp(abs(profit_fill - 50) * 2),
-            "accent": profit_color,
+            "fill": profit_fill,
+            "note": "Total profit across selected timeline",
+            "value_class": "is-pos" if total_profit >= 0 else "is-neg",
         },
         {
-            "label": "Single share",
-            "value": f"{singles_pct:.1f}%",
-            "fill": singles_fill,
-            "accent": "#64b5ff",
-        },
-        {
-            "label": "Avg stake",
+            "label": "Average Bet",
             "value": f"{avg_bet:.2f} €",
             "fill": stake_fill,
-            "accent": "#ffd166",
+            "note": "Mean stake per ticket",
+            "value_class": "",
         },
         {
-            "label": "Avg odds",
-            "value": avg_odds_display,
+            "label": "Average Odds",
+            "value": avg_odds_display if avg_odds is not None else "—",
             "fill": odds_fill,
-            "accent": "#b388ff",
+            "note": "Average odds per ticket",
+            "value_class": "",
+        },
+        {
+            "label": "Singles vs Combos",
+            "value": single_combo_display,
+            "fill": singles_fill,
+            "note": "Share of singles in your mix",
+            "value_class": "",
         },
     ]
 
-    stats_html = "".join(
+    stats_rows_html = "".join(
         [
             f"""
-            <div class="pw-stat-row">
-                <div class="pw-stat-label">{label}</div>
-                <div class="pw-stat-bar"><div class="pw-stat-bar__fill" style="width:{fill:.1f}%;"></div></div>
-                <div class="pw-stat-value">{value}</div>
+            <div class="pw-compare-row">
+                <div class="pw-compare-label">
+                    <div class="pw-compare-name">{row['label']}</div>
+                    <div class="pw-compare-note">{row['note']}</div>
+                </div>
+                <div class="pw-compare-bar">
+                    <div class="pw-compare-bar__fill" style="width:{row['fill']:.1f}%;"></div>
+                    <div class="pw-compare-bar__thumb" style="left:{row['fill']:.1f}%;"></div>
+                </div>
+                <div class="pw-compare-value {row['value_class']}">{row['value']}</div>
             </div>
             """
-            for label, fill, value in progress_rows
-        ]
-    )
-
-    donut_html = "".join(
-        [
-            f"""
-            <div class="pw-donut" style="--accent:{card['accent']};">
-                <div class="pw-donut-ring" style="background: conic-gradient(var(--accent) {card['fill']:.1f}%, rgba(255,255,255,0.08) 0);"></div>
-                <div class="pw-donut-value">{card['value']}</div>
-                <div class="pw-donut-label">{card['label']}</div>
-            </div>
-            """
-            for card in donut_cards
+            for row in stats_rows
         ]
     )
 
@@ -396,10 +384,7 @@ if nav_choice == "Profile":
             <div class="pw-chip">{time_span}</div>
         </div>
         <div class="pw-stats-overview-card">
-            <div class="pw-stats-overview-grid">
-                <div class="pw-stat-list">{stats_html}</div>
-                <div class="pw-donut-grid">{donut_html}</div>
-            </div>
+            <div class="pw-compare-grid">{stats_rows_html}</div>
         </div>
     </div>
     """
