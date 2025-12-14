@@ -1139,12 +1139,91 @@ def render_hero(parse_unibet_callback):
     return uploaded_file_hero
 
 
+def render_stats_overview(user_stats: dict, benchmark_stats: dict, deltas: dict):
+    """Render a compact benchmark comparison with deltas and bars."""
+
+    def format_value(label: str, value: float) -> str:
+        if label == "Average Bet Size":
+            return f"{value:.1f} €"
+        if label in {"Win Rate", "ROI"}:
+            return f"{value:.1f}%"
+        if label == "Monthly Volume":
+            return f"{int(round(value))} bets"
+        return f"{value:.2f}"
+
+    def calc_fill(user_value: float, avg_value: float) -> float:
+        low = min(user_value, avg_value, 0)
+        high = max(user_value, avg_value, 1)
+        if high == low:
+            return 0.5
+        return max(0.0, min(1.0, (user_value - low) / (high - low)))
+
+    metrics_order = [
+        "Average Bet Size",
+        "Average Odds",
+        "Win Rate",
+        "ROI",
+        "Monthly Volume",
+    ]
+
+    rows_html = []
+    for label in metrics_order:
+        user_val = user_stats.get(label, 0)
+        avg_val = benchmark_stats.get(label, 0)
+        delta_val = deltas.get(label, user_val - avg_val)
+        is_positive = delta_val >= 0
+        sign = "+" if delta_val > 0 else ""
+        arrow = "▲" if is_positive else "▼"
+        delta_display = f"{sign}{delta_val:.1f} {arrow}" if delta_val != 0 else "0.0"
+        fill = calc_fill(user_val, avg_val) * 100
+        rows_html.append(
+            f"""
+            <div class=\"pw-compare-row\">
+                <div class=\"pw-compare-top\">
+                    <div class=\"pw-compare-label\">{label}</div>
+                    <div class=\"pw-compare-value\">{format_value(label, user_val)}</div>
+                </div>
+                <div class=\"pw-compare-sub\">
+                    <span class=\"pw-compare-delta {'is-pos' if is_positive else 'is-neg'}\">{delta_display}</span>
+                    <span class=\"pw-compare-baseline\">Avg: {format_value(label, avg_val)}</span>
+                </div>
+                <div class=\"pw-compare-bar\">
+                    <div class=\"pw-compare-bar__fill\" style=\"width:{fill:.1f}%;\"></div>
+                </div>
+            </div>
+            """
+        )
+
+    st.markdown(
+        """
+        <div class="pw-compare-card">
+            <div class="pw-compare-head">
+                <div class="pw-compare-title">Stats vs Average Bettor</div>
+                <div class="pw-compare-meta">Benchmarks from community-wide averages</div>
+            </div>
+            <div class="pw-compare-grid">
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("".join(rows_html), unsafe_allow_html=True)
+
+    st.markdown(
+        """
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 __all__ = [
     "inject_global_css",
     "open_page_wrap",
     "close_page_wrap",
     "render_sidebar_loader",
     "render_hero",
+    "render_stats_overview",
     "spacer",
     "PROFILE_CSS",
 ]
