@@ -324,21 +324,18 @@ if nav_choice == "Profile":
         ("Time span", time_span, "Range of filtered data", "pw-stat__value"),
     ]
 
-    stat_blocks = []
-    for label, value, helper, value_class in stats:
-        stat_blocks.append(
-            textwrap.dedent(
-                f"""
-                <div class=\"pw-stat\">
-                    <div class=\"pw-stat__label\">{label}</div>
-                    <div class=\"{value_class}\">{value}</div>
-                    <div class=\"pw-stat__help\">{helper}</div>
-                </div>
-                """
-            ).strip()
-        )
-
-    stats_html = "\n".join(stat_blocks)
+    stats_html = "".join(
+        [
+            f"""
+            <div class=\"pw-stat\">
+                <div class=\"pw-stat__label\">{label}</div>
+                <div class=\"{value_class}\">{value}</div>
+                <div class=\"pw-stat__help\">{helper}</div>
+            </div>
+            """
+            for label, value, helper, value_class in stats
+        ]
+    )
 
     lean_direction = "Singles-leaning" if num_singles >= num_combos else "Combo-leaning"
     notes = [
@@ -350,65 +347,63 @@ if nav_choice == "Profile":
     ]
     notes_html = "".join([f"<li>{point}</li>" for point in notes])
 
-    profile_html = textwrap.dedent(
-        """
-        <div class="pw-profile-section">
-            <div class="pw-profile-header">
-                <div class="pw-profile-header__row">
-                    <div class="pw-profile-header__left">
-                        <div class="pw-avatar"><div class="pw-avatar__inner">PW</div></div>
-                        <div>
-                            <div class="pw-profile-title">Profile</div>
-                            <div class="pw-profile-subtitle">Your betting style at a glance</div>
-                        </div>
+    profile_html = """
+    <div class="pw-profile-section">
+        <div class="pw-profile-header">
+            <div class="pw-profile-header__row">
+                <div class="pw-profile-header__left">
+                    <div class="pw-avatar"><div class="pw-avatar__inner">PW</div></div>
+                    <div>
+                        <div class="pw-profile-title">Profile</div>
+                        <div class="pw-profile-subtitle">Your betting style at a glance</div>
                     </div>
-                    <div class="pw-chip">{time_span}</div>
-                    <div class="pw-mini-stats">
-                        <div class="pw-mini-stat">
-                            <div class="pw-stat__label">ROI</div>
-                            <div class="{roi_value_class}">{roi_total:.2f}%</div>
-                            <div class="pw-stat__help">Across this range</div>
-                        </div>
-                        <div class="pw-mini-stat">
-                            <div class="pw-stat__label">Tickets</div>
-                            <div class="pw-stat__value">{total_bets_count}</div>
-                            <div class="pw-stat__help">Singles {num_singles} · Combos {num_combos}</div>
-                        </div>
+                </div>
+                <div class="pw-chip">{time_span}</div>
+                <div class="pw-mini-stats">
+                    <div class="pw-mini-stat">
+                        <div class="pw-stat__label">ROI</div>
+                        <div class="{roi_value_class}">{roi_total:.2f}%</div>
+                        <div class="pw-stat__help">Across this range</div>
+                    </div>
+                    <div class="pw-mini-stat">
+                        <div class="pw-stat__label">Tickets</div>
+                        <div class="pw-stat__value">{total_bets_count}</div>
+                        <div class="pw-stat__help">Singles {num_singles} · Combos {num_combos}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="pw-stats-card">
+            <h4 style="margin: 2px 0 10px 0;">Stats Overview</h4>
+            <div class="pw-stats-grid">{stats_html}</div>
+        </div>
+        <div class="pw-two-col">
+            <div class="pw-stats-card">
+                <h4 style="margin: 2px 0 10px 0;">Session digest</h4>
+                <div class="digest-row">
+                    <div class="digest-chip">
+                        <div class="digest-label">Bets</div>
+                        <div class="digest-value">{rows}</div>
+                    </div>
+                    <div class="digest-chip">
+                        <div class="digest-label">Period</div>
+                        <div class="digest-value">{start} → {end}</div>
+                    </div>
+                    <div class="digest-chip">
+                        <div class="digest-label">Win / Loss</div>
+                        <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
                     </div>
                 </div>
             </div>
             <div class="pw-stats-card">
-                <h4 style="margin: 2px 0 10px 0;">Stats Overview</h4>
-                <div class="pw-stats-grid">{stats_html}</div>
-            </div>
-            <div class="pw-two-col">
-                <div class="pw-stats-card">
-                    <h4 style="margin: 2px 0 10px 0;">Session digest</h4>
-                    <div class="digest-row">
-                        <div class="digest-chip">
-                            <div class="digest-label">Bets</div>
-                            <div class="digest-value">{rows}</div>
-                        </div>
-                        <div class="digest-chip">
-                            <div class="digest-label">Period</div>
-                            <div class="digest-value">{start} → {end}</div>
-                        </div>
-                        <div class="digest-chip">
-                            <div class="digest-label">Win / Loss</div>
-                            <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="pw-stats-card">
-                    <h4 style="margin: 2px 0 10px 0;">Session notes</h4>
-                    <ul style="margin: 0; padding-left: 18px; color: var(--text); line-height: 1.6;">
-                        {notes_html}
-                    </ul>
-                </div>
+                <h4 style="margin: 2px 0 10px 0;">Session notes</h4>
+                <ul style="margin: 0; padding-left: 18px; color: var(--text); line-height: 1.6;">
+                    {notes_html}
+                </ul>
             </div>
         </div>
-        """
-    ).format(
+    </div>
+    """.format(
         time_span=time_span,
         roi_value_class=roi_value_class,
         roi_total=roi_total,
@@ -422,7 +417,7 @@ if nav_choice == "Profile":
         win=win_rate,
         loss=loss_rate,
         notes_html=notes_html,
-    ).strip()
+    )
 
     st.markdown(profile_html, unsafe_allow_html=True)
 
