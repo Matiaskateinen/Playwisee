@@ -1143,15 +1143,19 @@ def render_stats_overview(user_stats: dict, benchmark_stats: dict, deltas: dict)
     """Render a compact benchmark comparison with deltas and bars."""
 
     def format_value(label: str, value: float) -> str:
+        if value is None:
+            return "—"
         if label == "Average Bet Size":
             return f"{value:.1f} €"
         if label in {"Win Rate", "ROI"}:
             return f"{value:.1f}%"
         if label == "Monthly Volume":
-            return f"{int(round(value))} bets"
+            return f"{value:.0f} bets"
         return f"{value:.2f}"
 
     def calc_fill(user_value: float, avg_value: float) -> float:
+        if user_value is None or avg_value is None:
+            return 0.0
         low = min(user_value, avg_value, 0)
         high = max(user_value, avg_value, 1)
         if high == low:
@@ -1168,14 +1172,15 @@ def render_stats_overview(user_stats: dict, benchmark_stats: dict, deltas: dict)
 
     rows_html = []
     for label in metrics_order:
-        user_val = user_stats.get(label, 0)
-        avg_val = benchmark_stats.get(label, 0)
-        delta_val = deltas.get(label, user_val - avg_val)
-        is_positive = delta_val >= 0
-        sign = "+" if delta_val > 0 else ""
-        arrow = "▲" if is_positive else "▼"
-        delta_display = f"{sign}{delta_val:.1f} {arrow}" if delta_val != 0 else "0.0"
+        user_val = user_stats.get(label, None)
+        avg_val = benchmark_stats.get(label, None)
+        delta_val = deltas.get(label, None if user_val is None or avg_val is None else user_val - avg_val)
+        is_positive = delta_val is not None and delta_val >= 0
+        sign = "+" if delta_val is not None and delta_val > 0 else ""
+        arrow = "▲" if delta_val is not None and is_positive else ("▼" if delta_val is not None else "")
+        delta_display = "—" if delta_val is None else (f"{sign}{delta_val:.1f} {arrow}" if delta_val != 0 else "0.0")
         fill = calc_fill(user_val, avg_val) * 100
+        delta_class = "is-muted" if delta_val is None else ("is-pos" if is_positive else "is-neg")
         rows_html.append(
             f"""
             <div class=\"pw-compare-row\">
@@ -1184,7 +1189,7 @@ def render_stats_overview(user_stats: dict, benchmark_stats: dict, deltas: dict)
                     <div class=\"pw-compare-value\">{format_value(label, user_val)}</div>
                 </div>
                 <div class=\"pw-compare-sub\">
-                    <span class=\"pw-compare-delta {'is-pos' if is_positive else 'is-neg'}\">{delta_display}</span>
+                    <span class=\"pw-compare-delta {delta_class}\">{delta_display}</span>
                     <span class=\"pw-compare-baseline\">Avg: {format_value(label, avg_val)}</span>
                 </div>
                 <div class=\"pw-compare-bar\">
