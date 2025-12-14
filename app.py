@@ -314,6 +314,10 @@ if nav_choice == "Profile":
     elif total_profit < 0:
         pl_value_class += " is-neg"
 
+    import imports.ui as ui
+
+    st.markdown(ui.PROFILE_CSS, unsafe_allow_html=True)
+
     stats = [
         ("ROI", f"{roi_total:.2f}%", "Return across tracked stakes", roi_value_class),
         ("Net P/L", f"{total_profit:.2f} €", "Profit across this window", pl_value_class),
@@ -348,7 +352,7 @@ if nav_choice == "Profile":
     notes_html = "".join([f"<li>{point}</li>" for point in notes])
 
     profile_html = """
-    <div class="pw-profile-section">
+    <div class="pw-profile-wrap">
         <div class="pw-profile-header">
             <div class="pw-profile-header__row">
                 <div class="pw-profile-header__left">
@@ -358,17 +362,19 @@ if nav_choice == "Profile":
                         <div class="pw-profile-subtitle">Your betting style at a glance</div>
                     </div>
                 </div>
-                <div class="pw-chip">{time_span}</div>
-                <div class="pw-mini-stats">
-                    <div class="pw-mini-stat">
-                        <div class="pw-stat__label">ROI</div>
-                        <div class="{roi_value_class}">{roi_total:.2f}%</div>
-                        <div class="pw-stat__help">Across this range</div>
-                    </div>
-                    <div class="pw-mini-stat">
-                        <div class="pw-stat__label">Tickets</div>
-                        <div class="pw-stat__value">{total_bets_count}</div>
-                        <div class="pw-stat__help">Singles {num_singles} · Combos {num_combos}</div>
+                <div style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-left:auto;">
+                    <div class="pw-chip">{time_span}</div>
+                    <div class="pw-mini-stats">
+                        <div class="pw-mini-stat">
+                            <div class="pw-stat__label">ROI</div>
+                            <div class="{roi_value_class}">{roi_total:.2f}%</div>
+                            <div class="pw-stat__help">Across this range</div>
+                        </div>
+                        <div class="pw-mini-stat">
+                            <div class="pw-stat__label">Tickets</div>
+                            <div class="pw-stat__value">{total_bets_count}</div>
+                            <div class="pw-stat__help">{num_singles} singles · {num_combos} combos</div>
+                        </div>
                     </div>
                 </div>
             </div>
