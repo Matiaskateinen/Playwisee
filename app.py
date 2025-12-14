@@ -11,6 +11,7 @@ from imports.ui import (
     inject_global_css,
     open_page_wrap,
     render_hero,
+    render_stats_overview,
     render_sidebar_loader,
     spacer,
 )
@@ -43,6 +44,28 @@ with st.sidebar:
     sidebar_upload = render_sidebar_loader(parse_unibet_into_session)
 
 pd.options.display.float_format = "{:.2f}".format
+
+# Simulated profile metrics vs. community benchmarks
+user_stats = {
+    "Average Bet Size": 32.5,
+    "Average Odds": 2.35,
+    "Win Rate": 51.0,
+    "ROI": 3.2,
+    "Monthly Volume": 58,
+}
+
+average_stats = {
+    "Average Bet Size": 25,
+    "Average Odds": 2.10,
+    "Win Rate": 47,
+    "ROI": -4.0,
+    "Monthly Volume": 40,
+}
+
+stat_deltas = {
+    label: user_stats[label] - average_stats.get(label, 0)
+    for label in user_stats
+}
 
 
 def safe_read_excel(uploaded_file: bytes) -> pd.DataFrame:
@@ -318,6 +341,8 @@ if nav_choice == "Profile":
     singles_fill = clamp(singles_pct)
 
     st.markdown(PROFILE_CSS, unsafe_allow_html=True)
+
+    render_stats_overview(user_stats, average_stats, stat_deltas)
 
     avg_odds_display = "—" if avg_odds is None else f"{avg_odds:.2f}"
     single_combo_display = (
