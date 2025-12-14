@@ -9,10 +9,8 @@ from imports.ui import (
     close_page_wrap,
     inject_global_css,
     open_page_wrap,
-    render_stats_overview,
     render_hero,
     render_sidebar_loader,
-    PROFILE_CSS,
     spacer,
 )
 
@@ -46,11 +44,11 @@ with st.sidebar:
 pd.options.display.float_format = "{:.2f}".format
 
 COMMUNITY_AVG_STATS = {
-    "Average Bet Size": 25,
+    "Average Bet Size": 10,
     "Average Odds": 2.10,
-    "Win Rate": 47,
+    "Win Rate": 30,
     "ROI": -4.0,
-    "Monthly Volume": 40,
+    "Monthly Volume": 11,
 }
 
 
@@ -299,138 +297,7 @@ st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 
 # ---------- QUICK DIGEST / PROFILE ----------
 if nav_choice == "Profile":
-    date_start = df_filtered["date"].min()
-    date_end = df_filtered["date"].max()
-    total_bets_count = len(df_filtered_raw)
-    time_span = "–"
-    if pd.notna(date_start) and pd.notna(date_end):
-        time_span = f"{date_start.strftime('%b %Y')} – {date_end.strftime('%b %Y')}"
-
-    avg_odds = None
-    if "total_odds" in df_filtered.columns:
-        avg_odds = float(df_filtered["total_odds"].mean())
-    elif "odds" in df_filtered.columns:
-        avg_odds = float(df_filtered["odds"].mean())
-
-    singles_total = num_singles + num_combos
-    singles_pct = (num_singles / singles_total * 100) if singles_total > 0 else 0
-
-    def clamp(value: float, min_val: float = 0, max_val: float = 100) -> float:
-        return max(min_val, min(max_val, value))
-
-    profit_fill = clamp(50 + (total_profit / max(1, abs(total_profit), 50)) * 50)
-    stake_fill = clamp((avg_bet / 20) * 100)
-    odds_fill = clamp(((avg_odds - 1) / 4) * 100) if avg_odds is not None else 0
-    singles_fill = clamp(singles_pct)
-
-    st.markdown(PROFILE_CSS, unsafe_allow_html=True)
-
-    avg_bet_size = 0.0
-    if "bets" in df_filtered_raw.columns and not df_filtered_raw.empty:
-        avg_bet_size = float(df_filtered_raw["bets"].mean())
-
-    avg_odds_user = None
-    if "odds" in df_filtered_raw.columns and not df_filtered_raw.empty:
-        avg_odds_user = float(df_filtered_raw["odds"].mean())
-    elif "total_odds" in df_filtered.columns:
-        avg_odds_user = float(df_filtered["total_odds"].mean())
-
-    win_rate = None
-    if "wins" in df_filtered_raw.columns and not df_filtered_raw.empty:
-        win_rate = float((df_filtered_raw["wins"] > 0).mean() * 100)
-    elif "Profit" in df_filtered.columns:
-        win_rate = float((df_filtered["Profit"] > 0).mean() * 100)
-
-    monthly_volume = len(df_filtered)
-    if pd.notna(date_start) and pd.notna(date_end):
-        months = max(
-            1,
-            (date_end.year - date_start.year) * 12 + (date_end.month - date_start.month) + 1,
-        )
-        monthly_volume = monthly_volume / months
-
-    user_stats = {
-        "Average Bet Size": avg_bet_size,
-        "Average Odds": avg_odds_user,
-        "Win Rate": win_rate,
-        "ROI": float(roi_total),
-        "Monthly Volume": monthly_volume,
-    }
-
-    stat_deltas = {
-        label: None if user_stats[label] is None else user_stats[label] - COMMUNITY_AVG_STATS.get(label, 0)
-        for label in user_stats
-    }
-
-    render_stats_overview(user_stats, COMMUNITY_AVG_STATS, stat_deltas)
-
-    avg_odds_display = "—" if avg_odds is None else f"{avg_odds:.2f}"
-    single_combo_display = (
-        f"{num_singles} / {num_combos} ({singles_pct:.1f}%)" if singles_total > 0 else "—"
-    )
-
-    stat_rows = [
-        {"label": "Profit", "value": f"{total_profit:.2f} €", "fill": profit_fill, "value_class": "is-pos" if total_profit >= 0 else "is-neg"},
-        {"label": "Avg Stake", "value": f"{avg_bet:.2f} €", "fill": stake_fill, "value_class": ""},
-        {"label": "Avg Odds", "value": avg_odds_display, "fill": odds_fill, "value_class": ""},
-        {"label": "Single vs Combo", "value": single_combo_display, "fill": singles_fill, "value_class": ""},
-    ]
-
-    stat_rows_html = "".join(
-        [
-            f"""
-            <div class=\"pw-stat-row\">
-                <div class=\"pw-stat-label\">{row['label']}</div>
-                <div class=\"pw-stat-bar\">
-                    <div class=\"pw-stat-bar__fill\" style=\"width:{row['fill']:.1f}%;\"></div>
-                </div>
-                <div class=\"pw-stat-value {row['value_class']}\">{row['value']}</div>
-            </div>
-            """
-            for row in stat_rows
-        ]
-    )
-
-    profit_color = "#46e3c4" if total_profit >= 0 else "#ff7b7b"
-    donut_cards = [
-        {"label": "Profit", "value": f"{total_profit:.2f} €", "percent": profit_fill, "accent": profit_color},
-        {"label": "Single share", "value": f"{singles_pct:.1f}%", "percent": singles_fill, "accent": "#46e3c4"},
-        {"label": "Avg stake", "value": f"{avg_bet:.2f} €", "percent": stake_fill, "accent": "#8ab9ff"},
-        {"label": "Avg odds", "value": avg_odds_display, "percent": odds_fill, "accent": "#f2c94c"},
-    ]
-
-    donut_grid = "".join(
-        [
-            f"""
-            <div class=\"pw-donut\">
-                <div class=\"pw-donut-ring\" style=\"--percent:{card['percent']:.1f}; --accent:{card['accent']};\"></div>
-                <div class=\"pw-donut-value\">{card['value']}</div>
-                <div class=\"pw-donut-label\">{card['label']}</div>
-            </div>
-            """
-            for card in donut_cards
-        ]
-    )
-
-    profile_html = f"""
-    <div class=\"pw-profile-wrap\">
-        <div class=\"pw-stats-title-row\">
-            <div>
-                <div class=\"pw-profile-title\">Stats Overview</div>
-                <div class=\"pw-profile-subtitle\">Based on selected timeline</div>
-            </div>
-            <div class=\"pw-chip\">{time_span}</div>
-        </div>
-        <div class=\"pw-stats-overview-card\">
-            <div class=\"pw-stats-overview-grid\">
-                <div class=\"pw-stat-list\">{stat_rows_html}</div>
-                <div class=\"pw-donut-grid\">{donut_grid}</div>
-            </div>
-        </div>
-    </div>
-    """
-
-    st.markdown(profile_html, unsafe_allow_html=True)
+    pass
 
 
 # ---------- INTERACTIVE SECTIONS ----------
@@ -615,3 +482,4 @@ if nav_choice == "Markets/Tickets":
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
+
