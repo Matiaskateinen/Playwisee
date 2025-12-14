@@ -796,18 +796,20 @@ PROFILE_CSS = """
     justify-content: space-between;
     gap: 12px;
     flex-wrap: wrap;
+    padding: 6px 2px;
 }
 .pw-stats-overview-card {
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 14px 38px rgba(0,0,0,0.4);
+    padding: 22px;
+    box-shadow: 0 14px 38px rgba(0,0,0,0.38);
 }
 .pw-stats-overview-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 18px;
+    align-items: start;
 }
 .pw-stat-list {
     display: grid;
@@ -815,23 +817,25 @@ PROFILE_CSS = """
 }
 .pw-stat-row {
     display: grid;
-    grid-template-columns: 1fr 2fr auto;
-    gap: 10px;
+    grid-template-columns: 1.1fr 2.3fr auto;
+    gap: 12px;
     align-items: center;
-    padding: 10px 12px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(255,255,255,0.02);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.07);
+    background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 10px 26px rgba(0,0,0,0.32);
 }
 .pw-stat-label {
     color: var(--muted);
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
 }
 .pw-stat-bar {
     width: 100%;
-    height: 10px;
+    height: 12px;
     border-radius: 999px;
     background: rgba(255,255,255,0.06);
     position: relative;
@@ -840,40 +844,42 @@ PROFILE_CSS = """
 .pw-stat-bar__fill {
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, rgba(124, 244, 212, 0.85), rgba(100, 181, 255, 0.85));
+    background: linear-gradient(90deg, rgba(124, 244, 212, 0.9), rgba(100, 181, 255, 0.85));
     border-radius: inherit;
-    box-shadow: 0 0 18px rgba(124, 244, 212, 0.35);
+    box-shadow: 0 0 18px rgba(124, 244, 212, 0.28);
 }
 .pw-stat-value {
     font-weight: 700;
     font-size: 1.05rem;
     color: var(--text);
+    text-align: right;
 }
 .pw-donut-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 14px;
 }
 .pw-donut {
     position: relative;
     padding: 16px;
-    border-radius: 16px;
+    border-radius: 18px;
     border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.02);
-    box-shadow: 0 10px 28px rgba(0,0,0,0.32);
+    background: linear-gradient(145deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+    box-shadow: 0 12px 30px rgba(0,0,0,0.32);
     display: grid;
     place-items: center;
-    gap: 8px;
+    gap: 10px;
     --accent: #64b5ff;
 }
 .pw-donut-ring {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: conic-gradient(var(--accent) 0%, rgba(255,255,255,0.08) 0);
+    background: conic-gradient(var(--accent) calc(var(--percent) * 1%), rgba(255,255,255,0.08) 0);
     display: grid;
     place-items: center;
     position: relative;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04), 0 6px 18px rgba(0,0,0,0.28);
 }
 .pw-donut-ring::after {
     content: "";
@@ -885,6 +891,9 @@ PROFILE_CSS = """
 }
 .pw-donut-value {
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -58%);
     text-align: center;
     font-weight: 800;
     font-size: 1.1rem;
