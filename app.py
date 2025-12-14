@@ -44,7 +44,6 @@ with st.sidebar:
 
 pd.options.display.float_format = "{:.2f}".format
 
-
 def safe_read_excel(uploaded_file: bytes) -> pd.DataFrame:
     """Read the uploaded Excel file defensively so the app always boots."""
 

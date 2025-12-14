@@ -661,6 +661,104 @@ div[data-testid="dataframe"] {
     gap: 12px;
     margin-top: 12px;
 }
+.pw-compare-card {
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    background: linear-gradient(160deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.42);
+    padding: 16px;
+}
+.pw-compare-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.pw-compare-title {
+    font-weight: 800;
+    font-size: 1.02rem;
+}
+.pw-compare-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+}
+.pw-compare-row {
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 12px;
+    background: rgba(255,255,255,0.02);
+    display: grid;
+    gap: 8px;
+}
+.pw-compare-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.pw-compare-label {
+    font-weight: 700;
+    color: #dfe7f3;
+}
+.pw-compare-value {
+    font-weight: 800;
+    font-size: 1.05rem;
+}
+.pw-compare-sub {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--muted);
+    font-size: 0.94rem;
+}
+.pw-compare-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.pw-compare-delta.is-pos {
+    color: #46e3c4;
+    background: rgba(70, 227, 196, 0.1);
+}
+.pw-compare-delta.is-neg {
+    color: #ff9c9c;
+    background: rgba(255, 156, 156, 0.12);
+}
+.pw-compare-baseline {
+    padding: 4px 8px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+.pw-compare-bar {
+    position: relative;
+    height: 9px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.pw-compare-bar__fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    background: linear-gradient(90deg, #46e3c4, #7ad0ff);
+    border-radius: inherit;
+    box-shadow: 0 6px 14px rgba(70,227,196,0.25);
+}
+.pw-compare-meta {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
 </style>
 """
 
