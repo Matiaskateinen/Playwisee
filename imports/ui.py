@@ -135,6 +135,112 @@ PROFILE_CSS = """
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 16px;
 }
+.pw-stats-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.pw-stats-overview-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 14px 38px rgba(0,0,0,0.4);
+}
+.pw-stats-overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
+}
+.pw-stat-list {
+    display: grid;
+    gap: 12px;
+}
+.pw-stat-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.02);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.pw-stat-label {
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+.pw-stat-bar {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+}
+.pw-stat-bar__fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(124, 244, 212, 0.85), rgba(100, 181, 255, 0.85));
+    border-radius: inherit;
+    box-shadow: 0 0 18px rgba(124, 244, 212, 0.35);
+}
+.pw-stat-value {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text);
+}
+.pw-donut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+}
+.pw-donut {
+    position: relative;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.02);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.32);
+    display: grid;
+    place-items: center;
+    gap: 8px;
+    --accent: #64b5ff;
+}
+.pw-donut-ring {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(var(--accent) 0%, rgba(255,255,255,0.08) 0);
+    display: grid;
+    place-items: center;
+    position: relative;
+}
+.pw-donut-ring::after {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.pw-donut-value {
+    position: absolute;
+    text-align: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+.pw-donut-label {
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
 </style>
 """
 

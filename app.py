@@ -295,134 +295,117 @@ st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 if nav_choice == "Profile":
     date_start = df_filtered["date"].min()
     date_end = df_filtered["date"].max()
-    win_rate = round((df_filtered["wins"] > 0).mean() * 100, 1)
-    loss_rate = round(100 - win_rate, 1)
     total_bets_count = len(df_filtered_raw)
     time_span = "–"
     if pd.notna(date_start) and pd.notna(date_end):
         time_span = f"{date_start.strftime('%b %Y')} – {date_end.strftime('%b %Y')}"
 
-    roi_value_class = "pw-stat__value"
-    if roi_total > 0:
-        roi_value_class += " is-pos"
-    elif roi_total < 0:
-        roi_value_class += " is-neg"
+    avg_odds = None
+    if "total_odds" in df_filtered.columns:
+        avg_odds = float(df_filtered["total_odds"].mean())
+    elif "odds" in df_filtered.columns:
+        avg_odds = float(df_filtered["odds"].mean())
 
-    pl_value_class = "pw-stat__value"
-    if total_profit > 0:
-        pl_value_class += " is-pos"
-    elif total_profit < 0:
-        pl_value_class += " is-neg"
+    singles_total = num_singles + num_combos
+    singles_pct = (num_singles / singles_total * 100) if singles_total > 0 else 0
+
+    def clamp(value: float, min_val: float = 0, max_val: float = 100) -> float:
+        return max(min_val, min(max_val, value))
+
+    profit_fill = clamp(50 + (total_profit / max(1, abs(total_profit), 50)) * 50)
+    stake_fill = clamp((avg_bet / 20) * 100)
+    odds_fill = clamp(((avg_odds - 1) / 4) * 100) if avg_odds is not None else 0
+    singles_fill = clamp(singles_pct)
 
     import imports.ui as ui
 
     st.markdown(ui.PROFILE_CSS, unsafe_allow_html=True)
 
-    stats = [
-        ("ROI", f"{roi_total:.2f}%", "Return across tracked stakes", roi_value_class),
-        ("Net P/L", f"{total_profit:.2f} €", "Profit across this window", pl_value_class),
-        ("Avg stake", f"{avg_bet:.2f} €", "Mean stake per ticket", "pw-stat__value"),
-        ("Total bets", f"{total_bets_count}", "Tickets tracked in this span", "pw-stat__value"),
-        ("Win rate", f"{win_rate:.1f}%", "Share of tickets that won", "pw-stat__value"),
-        ("Singles / Combos", f"{num_singles} / {num_combos}", "Balance of bet types", "pw-stat__value"),
-        ("Time span", time_span, "Range of filtered data", "pw-stat__value"),
+    avg_odds_display = "—" if avg_odds is None else f"{avg_odds:.2f}"
+    single_combo_display = (
+        f"{num_singles} / {num_combos} ({singles_pct:.1f}%)" if singles_total > 0 else "—"
+    )
+
+    progress_rows = [
+        ("Profit", profit_fill, f"{total_profit:.2f} €"),
+        ("Avg Stake", stake_fill, f"{avg_bet:.2f} €"),
+        ("Avg Odds", odds_fill, avg_odds_display if avg_odds is not None else "—"),
+        ("Singles vs Combos", singles_fill, single_combo_display),
+    ]
+
+    profit_color = "#7cf4d4" if total_profit >= 0 else "#ff9c9c"
+
+    donut_cards = [
+        {
+            "label": "Profit",
+            "value": f"{total_profit:.2f} €",
+            "fill": clamp(abs(profit_fill - 50) * 2),
+            "accent": profit_color,
+        },
+        {
+            "label": "Single share",
+            "value": f"{singles_pct:.1f}%",
+            "fill": singles_fill,
+            "accent": "#64b5ff",
+        },
+        {
+            "label": "Avg stake",
+            "value": f"{avg_bet:.2f} €",
+            "fill": stake_fill,
+            "accent": "#ffd166",
+        },
+        {
+            "label": "Avg odds",
+            "value": avg_odds_display,
+            "fill": odds_fill,
+            "accent": "#b388ff",
+        },
     ]
 
     stats_html = "".join(
         [
             f"""
-            <div class=\"pw-stat\">
-                <div class=\"pw-stat__label\">{label}</div>
-                <div class=\"{value_class}\">{value}</div>
-                <div class=\"pw-stat__help\">{helper}</div>
+            <div class=\"pw-stat-row\">
+                <div class=\"pw-stat-label\">{label}</div>
+                <div class=\"pw-stat-bar\"><div class=\"pw-stat-bar__fill\" style=\"width:{fill:.1f}%;\"></div></div>
+                <div class=\"pw-stat-value\">{value}</div>
             </div>
             """
-            for label, value, helper, value_class in stats
+            for label, fill, value in progress_rows
         ]
     )
 
-    lean_direction = "Singles-leaning" if num_singles >= num_combos else "Combo-leaning"
-    notes = [
-        f"Mean stake per ticket sits at <strong>{avg_bet:.2f} €</strong>.",
-        f"Win rate at <strong>{win_rate:.1f}%</strong> across {total_bets_count} bets.",
-        f"ROI trend currently <strong>{'positive' if roi_total >= 0 else 'negative'}</strong>.",
-        f"{lean_direction}: {num_singles} singles vs {num_combos} combos.",
-        f"Time span covered: {time_span}.",
-    ]
-    notes_html = "".join([f"<li>{point}</li>" for point in notes])
+    donut_html = "".join(
+        [
+            f"""
+            <div class=\"pw-donut\" style=\"--accent:{card['accent']};\">
+                <div class=\"pw-donut-ring\" style=\"background: conic-gradient(var(--accent) {card['fill']:.1f}%, rgba(255,255,255,0.08) 0);\"></div>
+                <div class=\"pw-donut-value\">{card['value']}</div>
+                <div class=\"pw-donut-label\">{card['label']}</div>
+            </div>
+            """
+            for card in donut_cards
+        ]
+    )
 
-    profile_html = """
-    <div class="pw-profile-wrap">
-        <div class="pw-profile-header">
-            <div class="pw-profile-header__row">
-                <div class="pw-profile-header__left">
-                    <div class="pw-avatar"><div class="pw-avatar__inner">PW</div></div>
-                    <div>
-                        <div class="pw-profile-title">Profile</div>
-                        <div class="pw-profile-subtitle">Your betting style at a glance</div>
-                    </div>
+    profile_html = textwrap.dedent(
+        f"""
+        <div class=\"pw-profile-wrap\">
+            <div class=\"pw-stats-title-row\">
+                <div>
+                    <div class=\"pw-profile-title\">Stats Overview</div>
+                    <div class=\"pw-profile-subtitle\">Based on selected timeline</div>
                 </div>
-                <div style="display:flex; align-items:flex-start; gap:12px; flex-wrap:wrap; margin-left:auto;">
-                    <div class="pw-chip">{time_span}</div>
-                    <div class="pw-mini-stats">
-                        <div class="pw-mini-stat">
-                            <div class="pw-stat__label">ROI</div>
-                            <div class="{roi_value_class}">{roi_total:.2f}%</div>
-                            <div class="pw-stat__help">Across this range</div>
-                        </div>
-                        <div class="pw-mini-stat">
-                            <div class="pw-stat__label">Tickets</div>
-                            <div class="pw-stat__value">{total_bets_count}</div>
-                            <div class="pw-stat__help">{num_singles} singles · {num_combos} combos</div>
-                        </div>
-                    </div>
+                <div class=\"pw-chip\">{time_span}</div>
+            </div>
+            <div class=\"pw-stats-overview-card\">
+                <div class=\"pw-stats-overview-grid\">
+                    <div class=\"pw-stat-list\">{stats_html}</div>
+                    <div class=\"pw-donut-grid\">{donut_html}</div>
                 </div>
             </div>
         </div>
-        <div class="pw-stats-card">
-            <h4 style="margin: 2px 0 10px 0;">Stats Overview</h4>
-            <div class="pw-stats-grid">{stats_html}</div>
-        </div>
-        <div class="pw-two-col">
-            <div class="pw-stats-card">
-                <h4 style="margin: 2px 0 10px 0;">Session digest</h4>
-                <div class="digest-row">
-                    <div class="digest-chip">
-                        <div class="digest-label">Bets</div>
-                        <div class="digest-value">{rows}</div>
-                    </div>
-                    <div class="digest-chip">
-                        <div class="digest-label">Period</div>
-                        <div class="digest-value">{start} → {end}</div>
-                    </div>
-                    <div class="digest-chip">
-                        <div class="digest-label">Win / Loss</div>
-                        <div class="digest-value"><span class="win">{win}%</span><span class="loss">{loss}%</span></div>
-                    </div>
-                </div>
-            </div>
-            <div class="pw-stats-card">
-                <h4 style="margin: 2px 0 10px 0;">Session notes</h4>
-                <ul style="margin: 0; padding-left: 18px; color: var(--text); line-height: 1.6;">
-                    {notes_html}
-                </ul>
-            </div>
-        </div>
-    </div>
-    """.format(
-        time_span=time_span,
-        roi_value_class=roi_value_class,
-        roi_total=roi_total,
-        total_bets_count=total_bets_count,
-        num_singles=num_singles,
-        num_combos=num_combos,
-        stats_html=stats_html,
-        rows=len(df_filtered),
-        start=date_start.strftime("%d %b %Y") if pd.notna(date_start) else "–",
-        end=date_end.strftime("%d %b %Y") if pd.notna(date_end) else "–",
-        win=win_rate,
-        loss=loss_rate,
-        notes_html=notes_html,
+        """
     )
 
     st.markdown(profile_html, unsafe_allow_html=True)
