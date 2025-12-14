@@ -6,13 +6,13 @@ import altair as alt
 from imports.coolbet import NormalizationError, normalize_coolbet_data
 from imports.unibet_paste import normalize_unibet_paste, parse_unibet_paste
 from imports.ui import (
-    PROFILE_CSS,
     close_page_wrap,
     inject_global_css,
     open_page_wrap,
-    render_hero,
     render_stats_overview,
+    render_hero,
     render_sidebar_loader,
+    PROFILE_CSS,
     spacer,
 )
 
@@ -74,14 +74,11 @@ parsed_unibet_df = st.session_state.get("parsed_unibet_df")
 show_hero = (sidebar_upload is None) and (parsed_unibet_df is None)
 
 if show_hero:
-    hero_upload = render_hero(parse_unibet_into_session)
-    uploaded_file = sidebar_upload or hero_upload
-    close_page_wrap()
-    spacer()
-else:
-    uploaded_file = sidebar_upload
-    close_page_wrap()
-    spacer()
+    render_hero(parse_unibet_into_session)
+close_page_wrap()
+spacer()
+
+uploaded_file = sidebar_upload
 
 parsed_unibet_df = st.session_state.get("parsed_unibet_df")
 
@@ -328,19 +325,21 @@ if nav_choice == "Profile":
 
     st.markdown(PROFILE_CSS, unsafe_allow_html=True)
 
-    avg_bet_size = float(df_filtered["bets"].mean()) if not df_filtered.empty else 0.0
+    avg_bet_size = 0.0
+    if "bets" in df_filtered_raw.columns and not df_filtered_raw.empty:
+        avg_bet_size = float(df_filtered_raw["bets"].mean())
 
     avg_odds_user = None
-    if "total_odds" in df_filtered.columns:
+    if "odds" in df_filtered_raw.columns and not df_filtered_raw.empty:
+        avg_odds_user = float(df_filtered_raw["odds"].mean())
+    elif "total_odds" in df_filtered.columns:
         avg_odds_user = float(df_filtered["total_odds"].mean())
-    elif "odds" in df_filtered.columns:
-        avg_odds_user = float(df_filtered["odds"].mean())
 
     win_rate = None
-    if "Profit" in df_filtered.columns:
+    if "wins" in df_filtered_raw.columns and not df_filtered_raw.empty:
+        win_rate = float((df_filtered_raw["wins"] > 0).mean() * 100)
+    elif "Profit" in df_filtered.columns:
         win_rate = float((df_filtered["Profit"] > 0).mean() * 100)
-    elif "wins" in df_filtered.columns:
-        win_rate = float((df_filtered["wins"] > 0).mean() * 100)
 
     monthly_volume = len(df_filtered)
     if pd.notna(date_start) and pd.notna(date_end):

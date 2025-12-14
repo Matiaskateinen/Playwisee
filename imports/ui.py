@@ -762,6 +762,70 @@ div[data-testid="dataframe"] {
 </style>
 """
 
+def inject_global_css() -> None:
+    st.markdown(GLOBAL_CSS, unsafe_allow_html=True)
+
+
+def open_page_wrap() -> None:
+    st.markdown("<div class='page-wrap'>", unsafe_allow_html=True)
+
+
+def close_page_wrap() -> None:
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def spacer(height: int = 32) -> None:
+    if height == 32:
+        st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
+    else:
+        st.markdown(f"<div style='height:{height}px'></div>", unsafe_allow_html=True)
+
+
+def render_sidebar_loader(parse_unibet_callback):
+    st.markdown("#### Load data")
+    uploaded_file = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"], key="sidebar_excel")
+    st.caption("Tip: export your betting history as .xlsx and drop it here.")
+    with st.expander("Or paste Unibet bet history", expanded=False):
+        raw_text_sidebar = st.text_area("Paste your Unibet bet history here", height=180, key="sidebar_unibet")
+        parse_unibet_callback(raw_text_sidebar, "parse_unibet_paste_sidebar")
+    return uploaded_file
+
+
+def render_hero(parse_unibet_callback):
+    hero_cols = st.columns([1.05, 0.95])
+
+    with hero_cols[0]:
+        st.markdown(
+            """
+            <div class="hero-copy">
+                <div class="hero-pill">PlayWise · 1.022 </div>
+                <h1 style="margin-top:6px;">PlayWise</h1>
+                <p class="playwise-subtitle">Use your strengths, learn from your weaknesses.</p>
+                <h3 class="hero-headline">See what’s working — and what’s not</h3>
+                <p class="hero-description">Upload your bets to get ROI, profit trends and a profile of how you play. No tips, no picks — just the stats that show your edge.</p>
+                <ul class="hero-bullets">
+                    <li>ROI & profit curve to show momentum</li>
+                    <li>Strongest and weakest markets surfaced automatically</li>
+                    <li>Single- vs combo-heavy profile at a glance</li>
+                </ul>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with hero_cols[1]:
+        st.markdown(
+            """
+            <div class="hero-card">
+                <p class="hero-description" style="margin-bottom:4px;">Load data from the sidebar to begin.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    return None
+
+
 PROFILE_CSS = """
 <style>
 .pw-profile-wrap {
@@ -942,6 +1006,7 @@ PROFILE_CSS = """
 .pw-stat-bar__fill {
     position: absolute;
     inset: 0;
+    width: 0;
     background: linear-gradient(90deg, rgba(124, 244, 212, 0.9), rgba(100, 181, 255, 0.85));
     border-radius: inherit;
     box-shadow: 0 0 18px rgba(124, 244, 212, 0.28);
@@ -1066,79 +1131,6 @@ PROFILE_CSS = """
 """
 
 
-def inject_global_css() -> None:
-    st.markdown(GLOBAL_CSS, unsafe_allow_html=True)
-
-
-def open_page_wrap() -> None:
-    st.markdown("<div class='page-wrap'>", unsafe_allow_html=True)
-
-
-def close_page_wrap() -> None:
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-def spacer(height: int = 32) -> None:
-    if height == 32:
-        st.markdown("<div class='hero-spacer'></div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div style='height:{height}px'></div>", unsafe_allow_html=True)
-
-
-def render_sidebar_loader(parse_unibet_callback):
-    st.markdown("#### Load data")
-    uploaded_file = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"], key="sidebar_excel")
-    st.caption("Tip: export your betting history as .xlsx and drop it here.")
-    with st.expander("Or paste Unibet bet history", expanded=False):
-        raw_text_sidebar = st.text_area("Paste your Unibet bet history here", height=180, key="sidebar_unibet")
-        parse_unibet_callback(raw_text_sidebar, "parse_unibet_paste_sidebar")
-    return uploaded_file
-
-
-def render_hero(parse_unibet_callback):
-    hero_cols = st.columns([1.05, 0.95])
-
-    with hero_cols[0]:
-        st.markdown(
-            """
-            <div class="hero-copy">
-                <div class="hero-pill">PlayWise · 1.022 </div>
-                <h1 style="margin-top:6px;">PlayWise</h1>
-                <p class="playwise-subtitle">Use your strengths, learn from your weaknesses.</p>
-                <h3 class="hero-headline">See what’s working — and what’s not</h3>
-                <p class="hero-description">Upload your bets to get ROI, profit trends and a profile of how you play. No tips, no picks — just the stats that show your edge.</p>
-                <ul class="hero-bullets">
-                    <li>ROI & profit curve to show momentum</li>
-                    <li>Strongest and weakest markets surfaced automatically</li>
-                    <li>Single- vs combo-heavy profile at a glance</li>
-                </ul>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with hero_cols[1]:
-        st.markdown("<div class='upload-col'>", unsafe_allow_html=True)
-        st.markdown(
-            """
-            <div class="upload-card">
-                <div class="upload-card__inner">
-                    <div class="upload-card__title">Upload Sportsbook Excel</div>
-                    <p class="upload-card__helper">.xlsx export from e.g. Coolbet or Veikkaus.</p>
-            """,
-            unsafe_allow_html=True,
-        )
-        uploaded_file_hero = st.file_uploader("", type=["xlsx"], key="hero_excel")
-        st.caption("Tip: export your betting history as .xlsx and drop it here.")
-        with st.expander("Or paste Unibet bet history", expanded=False):
-            raw_text = st.text_area("Paste your Unibet bet history here", height=200, key="hero_unibet")
-            parse_unibet_callback(raw_text, "parse_unibet_paste")
-        st.markdown("</div></div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    return uploaded_file_hero
-
-
 def render_stats_overview(user_stats: dict, benchmark_stats: dict, deltas: dict):
     """Render a compact benchmark comparison with deltas and bars."""
 
@@ -1229,6 +1221,6 @@ __all__ = [
     "render_sidebar_loader",
     "render_hero",
     "render_stats_overview",
-    "spacer",
     "PROFILE_CSS",
+    "spacer",
 ]
