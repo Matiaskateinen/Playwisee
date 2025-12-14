@@ -1,4 +1,10 @@
-"""Thin wrapper module to avoid circular imports when using UI helpers."""
+"""Thin wrapper module to avoid circular imports when using UI helpers.
+
+This module re-exports the UI helper functions so the main app can import a
+single module (``imports.ui``) for all UI concerns. Keeping the import surface
+centralized prevents accidental divergence between ``app.py`` and the helper
+implementations.
+"""
 
 from .ui_helpers import (
     inject_global_css,
@@ -8,6 +14,16 @@ from .ui_helpers import (
     render_hero,
     spacer,
 )
+
+__all__ = [
+    "inject_global_css",
+    "open_page_wrap",
+    "close_page_wrap",
+    "render_sidebar_loader",
+    "render_hero",
+    "spacer",
+    "PROFILE_CSS",
+]
 
 PROFILE_CSS = """
 <style>
