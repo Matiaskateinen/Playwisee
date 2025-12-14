@@ -6,13 +6,13 @@ import altair as alt
 from imports.coolbet import NormalizationError, normalize_coolbet_data
 from imports.unibet_paste import normalize_unibet_paste, parse_unibet_paste
 from imports.ui import (
-    PROFILE_CSS,
     close_page_wrap,
     inject_global_css,
     open_page_wrap,
-    render_hero,
     render_stats_overview,
+    render_hero,
     render_sidebar_loader,
+    PROFILE_CSS,
     spacer,
 )
 
@@ -74,14 +74,11 @@ parsed_unibet_df = st.session_state.get("parsed_unibet_df")
 show_hero = (sidebar_upload is None) and (parsed_unibet_df is None)
 
 if show_hero:
-    hero_upload = render_hero(parse_unibet_into_session)
-    uploaded_file = sidebar_upload or hero_upload
-    close_page_wrap()
-    spacer()
-else:
-    uploaded_file = sidebar_upload
-    close_page_wrap()
-    spacer()
+    render_hero(parse_unibet_into_session)
+close_page_wrap()
+spacer()
+
+uploaded_file = sidebar_upload
 
 parsed_unibet_df = st.session_state.get("parsed_unibet_df")
 
