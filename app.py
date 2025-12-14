@@ -388,25 +388,23 @@ if nav_choice == "Profile":
         ]
     )
 
-    profile_html = textwrap.dedent(
-        f"""
-        <div class=\"pw-profile-wrap\">
-            <div class=\"pw-stats-title-row\">
-                <div>
-                    <div class=\"pw-profile-title\">Stats Overview</div>
-                    <div class=\"pw-profile-subtitle\">Based on selected timeline</div>
-                </div>
-                <div class=\"pw-chip\">{time_span}</div>
+    profile_html = f"""
+    <div class=\"pw-profile-wrap\">
+        <div class=\"pw-stats-title-row\">
+            <div>
+                <div class=\"pw-profile-title\">Stats Overview</div>
+                <div class=\"pw-profile-subtitle\">Based on selected timeline</div>
             </div>
-            <div class=\"pw-stats-overview-card\">
-                <div class=\"pw-stats-overview-grid\">
-                    <div class=\"pw-stat-list\">{stats_html}</div>
-                    <div class=\"pw-donut-grid\">{donut_html}</div>
-                </div>
+            <div class=\"pw-chip\">{time_span}</div>
+        </div>
+        <div class=\"pw-stats-overview-card\">
+            <div class=\"pw-stats-overview-grid\">
+                <div class=\"pw-stat-list\">{stats_html}</div>
+                <div class=\"pw-donut-grid\">{donut_html}</div>
             </div>
         </div>
-        """
-    )
+    </div>
+    """
 
     st.markdown(profile_html, unsafe_allow_html=True)
 
