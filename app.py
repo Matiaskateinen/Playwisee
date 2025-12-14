@@ -2,16 +2,16 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import altair as alt
-import textwrap
 
 from imports.coolbet import NormalizationError, normalize_coolbet_data
 from imports.unibet_paste import normalize_unibet_paste, parse_unibet_paste
-from imports.ui_helpers import (
+from imports.ui import (
+    PROFILE_CSS,
+    close_page_wrap,
     inject_global_css,
     open_page_wrap,
-    close_page_wrap,
-    render_sidebar_loader,
     render_hero,
+    render_sidebar_loader,
     spacer,
 )
 
@@ -317,9 +317,7 @@ if nav_choice == "Profile":
     odds_fill = clamp(((avg_odds - 1) / 4) * 100) if avg_odds is not None else 0
     singles_fill = clamp(singles_pct)
 
-    import imports.ui as ui
-
-    st.markdown(ui.PROFILE_CSS, unsafe_allow_html=True)
+    st.markdown(PROFILE_CSS, unsafe_allow_html=True)
 
     avg_odds_display = "—" if avg_odds is None else f"{avg_odds:.2f}"
     single_combo_display = (
@@ -365,10 +363,10 @@ if nav_choice == "Profile":
     stats_html = "".join(
         [
             f"""
-            <div class=\"pw-stat-row\">
-                <div class=\"pw-stat-label\">{label}</div>
-                <div class=\"pw-stat-bar\"><div class=\"pw-stat-bar__fill\" style=\"width:{fill:.1f}%;\"></div></div>
-                <div class=\"pw-stat-value\">{value}</div>
+            <div class="pw-stat-row">
+                <div class="pw-stat-label">{label}</div>
+                <div class="pw-stat-bar"><div class="pw-stat-bar__fill" style="width:{fill:.1f}%;"></div></div>
+                <div class="pw-stat-value">{value}</div>
             </div>
             """
             for label, fill, value in progress_rows
@@ -378,10 +376,10 @@ if nav_choice == "Profile":
     donut_html = "".join(
         [
             f"""
-            <div class=\"pw-donut\" style=\"--accent:{card['accent']};\">
-                <div class=\"pw-donut-ring\" style=\"background: conic-gradient(var(--accent) {card['fill']:.1f}%, rgba(255,255,255,0.08) 0);\"></div>
-                <div class=\"pw-donut-value\">{card['value']}</div>
-                <div class=\"pw-donut-label\">{card['label']}</div>
+            <div class="pw-donut" style="--accent:{card['accent']};">
+                <div class="pw-donut-ring" style="background: conic-gradient(var(--accent) {card['fill']:.1f}%, rgba(255,255,255,0.08) 0);"></div>
+                <div class="pw-donut-value">{card['value']}</div>
+                <div class="pw-donut-label">{card['label']}</div>
             </div>
             """
             for card in donut_cards
@@ -389,18 +387,18 @@ if nav_choice == "Profile":
     )
 
     profile_html = f"""
-    <div class=\"pw-profile-wrap\">
-        <div class=\"pw-stats-title-row\">
+    <div class="pw-profile-wrap">
+        <div class="pw-stats-title-row">
             <div>
-                <div class=\"pw-profile-title\">Stats Overview</div>
-                <div class=\"pw-profile-subtitle\">Based on selected timeline</div>
+                <div class="pw-profile-title">Stats Overview</div>
+                <div class="pw-profile-subtitle">Based on selected timeline</div>
             </div>
-            <div class=\"pw-chip\">{time_span}</div>
+            <div class="pw-chip">{time_span}</div>
         </div>
-        <div class=\"pw-stats-overview-card\">
-            <div class=\"pw-stats-overview-grid\">
-                <div class=\"pw-stat-list\">{stats_html}</div>
-                <div class=\"pw-donut-grid\">{donut_html}</div>
+        <div class="pw-stats-overview-card">
+            <div class="pw-stats-overview-grid">
+                <div class="pw-stat-list">{stats_html}</div>
+                <div class="pw-donut-grid">{donut_html}</div>
             </div>
         </div>
     </div>
