@@ -759,6 +759,49 @@ div[data-testid="dataframe"] {
     color: var(--muted);
     font-size: 0.92rem;
 }
+.pw-qp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+    margin-top: 4px;
+}
+.pw-qp-card {
+    position: relative;
+    padding: 16px 16px 14px 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: linear-gradient(165deg, rgba(255,255,255,0.02), rgba(255,255,255,0)), var(--card);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.42);
+    overflow: hidden;
+}
+.pw-qp-card:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 4px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #46e3c4, #7ad0ff);
+    opacity: 0.9;
+}
+.pw-qp-kicker {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+.pw-qp-value {
+    font-weight: 800;
+    font-size: 1.35rem;
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+.pw-qp-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
 </style>
 """
 
