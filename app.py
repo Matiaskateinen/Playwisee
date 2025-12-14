@@ -45,26 +45,12 @@ with st.sidebar:
 
 pd.options.display.float_format = "{:.2f}".format
 
-# Simulated profile metrics vs. community benchmarks
-user_stats = {
-    "Average Bet Size": 32.5,
-    "Average Odds": 2.35,
-    "Win Rate": 51.0,
-    "ROI": 3.2,
-    "Monthly Volume": 58,
-}
-
-average_stats = {
+COMMUNITY_AVG_STATS = {
     "Average Bet Size": 25,
     "Average Odds": 2.10,
     "Win Rate": 47,
     "ROI": -4.0,
     "Monthly Volume": 40,
-}
-
-stat_deltas = {
-    label: user_stats[label] - average_stats.get(label, 0)
-    for label in user_stats
 }
 
 
@@ -342,7 +328,42 @@ if nav_choice == "Profile":
 
     st.markdown(PROFILE_CSS, unsafe_allow_html=True)
 
-    render_stats_overview(user_stats, average_stats, stat_deltas)
+    avg_bet_size = float(df_filtered["bets"].mean()) if not df_filtered.empty else 0.0
+
+    avg_odds_user = None
+    if "total_odds" in df_filtered.columns:
+        avg_odds_user = float(df_filtered["total_odds"].mean())
+    elif "odds" in df_filtered.columns:
+        avg_odds_user = float(df_filtered["odds"].mean())
+
+    win_rate = None
+    if "Profit" in df_filtered.columns:
+        win_rate = float((df_filtered["Profit"] > 0).mean() * 100)
+    elif "wins" in df_filtered.columns:
+        win_rate = float((df_filtered["wins"] > 0).mean() * 100)
+
+    monthly_volume = len(df_filtered)
+    if pd.notna(date_start) and pd.notna(date_end):
+        months = max(
+            1,
+            (date_end.year - date_start.year) * 12 + (date_end.month - date_start.month) + 1,
+        )
+        monthly_volume = monthly_volume / months
+
+    user_stats = {
+        "Average Bet Size": avg_bet_size,
+        "Average Odds": avg_odds_user,
+        "Win Rate": win_rate,
+        "ROI": float(roi_total),
+        "Monthly Volume": monthly_volume,
+    }
+
+    stat_deltas = {
+        label: None if user_stats[label] is None else user_stats[label] - COMMUNITY_AVG_STATS.get(label, 0)
+        for label in user_stats
+    }
+
+    render_stats_overview(user_stats, COMMUNITY_AVG_STATS, stat_deltas)
 
     avg_odds_display = "—" if avg_odds is None else f"{avg_odds:.2f}"
     single_combo_display = (
