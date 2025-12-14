@@ -44,11 +44,11 @@ with st.sidebar:
 pd.options.display.float_format = "{:.2f}".format
 
 COMMUNITY_AVG_STATS = {
-    "Average Bet Size": 25,
+    "Average Bet Size": 10,
     "Average Odds": 2.10,
-    "Win Rate": 47,
+    "Win Rate": 30,
     "ROI": -4.0,
-    "Monthly Volume": 40,
+    "Monthly Volume": 11,
 }
 
 
@@ -482,3 +482,4 @@ if nav_choice == "Markets/Tickets":
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
+
