@@ -11,6 +11,7 @@ from imports.ui import (
     open_page_wrap,
     render_hero,
     render_sidebar_loader,
+    render_stats_overview,
     spacer,
 )
 
@@ -297,7 +298,53 @@ st.markdown('</div>', unsafe_allow_html=True)  # end hero-card
 
 # ---------- QUICK DIGEST / PROFILE ----------
 if nav_choice == "Profile":
-    pass
+    st.markdown("### Profile")
+
+    date_start = df_filtered["date"].min()
+    date_end = df_filtered["date"].max()
+    total_bets_count = len(df_filtered_raw)
+    time_span = "–"
+    if pd.notna(date_start) and pd.notna(date_end):
+        time_span = f"{date_start.strftime('%b %Y')} – {date_end.strftime('%b %Y')}"
+
+    avg_odds = None
+    if "total_odds" in df_filtered.columns:
+        avg_odds = float(df_filtered["total_odds"].mean())
+    elif "odds" in df_filtered.columns:
+        avg_odds = float(df_filtered["odds"].mean())
+
+    win_rate = None
+    if "wins" in df_filtered.columns:
+        win_rate = float((df_filtered["wins"] > 0).mean() * 100)
+
+    months_active = None
+    if pd.notna(date_start) and pd.notna(date_end):
+        months_active = max(((date_end - date_start).days / 30.0), 1)
+    monthly_volume = (total_bets_count / months_active) if months_active else total_bets_count
+
+    user_stats = {
+        "Average Bet Size": avg_bet,
+        "Average Odds": avg_odds,
+        "Win Rate": win_rate,
+        "ROI": roi_total,
+        "Monthly Volume": monthly_volume,
+    }
+
+    stat_deltas = {
+        label: (
+            None
+            if value is None or label not in COMMUNITY_AVG_STATS
+            else value - COMMUNITY_AVG_STATS[label]
+        )
+        for label, value in user_stats.items()
+    }
+
+    render_stats_overview(user_stats, COMMUNITY_AVG_STATS, stat_deltas)
+
+    mini_cols = st.columns(3)
+    mini_cols[0].metric("Time span", time_span)
+    mini_cols[1].metric("Total tickets", f"{total_bets_count}")
+    mini_cols[2].metric("Current ROI", f"{roi_total:.2f}%")
 
 
 # ---------- INTERACTIVE SECTIONS ----------
