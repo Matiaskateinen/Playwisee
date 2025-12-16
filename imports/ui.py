@@ -138,29 +138,29 @@ div[data-testid="dataframe"] {
     align-items: center;
     padding: 12px 10px;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.04);
-    background: rgba(255,255,255,0.01);
+    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.03);
     color: var(--muted);
     font-weight: 700;
     letter-spacing: 0.02em;
     text-transform: none;
-    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+    box-shadow: none;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label::before,
+[data-testid="stSidebar"] [role="radiogroup"] label::after {
+    content: none !important;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    color: #b1f4df;
-    border-color: rgba(70, 227, 196, 0.35);
-    background: rgba(70, 227, 196, 0.05);
+    color: var(--text);
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.08);
 }
 [data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"] {
     color: var(--text);
-    border-color: rgba(70, 227, 196, 0.75);
-    background: linear-gradient(135deg, rgba(70, 227, 196, 0.16), rgba(0, 157, 255, 0.12));
-    box-shadow: 0 10px 28px rgba(0,0,0,0.32);
-}
-[data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"]::after {
-    width: 46%;
-    opacity: 1;
-    box-shadow: 0 0 22px rgba(0, 157, 255, 0.35);
+    border-color: rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.14);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 
 h1 {
