@@ -325,7 +325,9 @@ if nav_choice == "Profile":
 
     date_start = df_filtered["date"].min()
     date_end = df_filtered["date"].max()
-    total_bets_count = len(df_filtered_raw)
+    # Each grouped row represents a single ticket (combo or single), so count rows instead
+    # of raw legs to avoid over-counting combo components.
+    total_bets_count = len(df_filtered)
     time_span = "–"
     if pd.notna(date_start) and pd.notna(date_end):
         time_span = f"{date_start.strftime('%b %Y')} – {date_end.strftime('%b %Y')}"
