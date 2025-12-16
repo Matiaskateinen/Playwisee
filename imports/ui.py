@@ -129,53 +129,33 @@ div[data-testid="dataframe"] {
 }
 [data-testid="stSidebar"] [role="radiogroup"] {
     display: grid;
-    gap: 8px;
-    padding: 10px 4px 12px 4px;
+    gap: 10px;
+    padding: 6px 2px 10px 2px;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label {
-    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 6px;
-    padding: 12px 0 10px 0;
-    margin: 0 6px;
+    padding: 12px 10px;
     border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.01);
     color: var(--muted);
     font-weight: 700;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.02em;
     text-transform: none;
-    background: transparent;
-    border: none;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-[data-testid="stSidebar"] [role="radiogroup"] label > div:first-child {
-    display: none;
-}
-[data-testid="stSidebar"] [role="radiogroup"] label::after {
-    content: '';
-    position: absolute;
-    bottom: 6px;
-    left: 50%;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(70, 227, 196, 0.92), rgba(0, 157, 255, 0.86));
-    border-radius: 999px;
-    transform: translateX(-50%);
-    opacity: 0;
-    transition: width 0.22s ease, opacity 0.22s ease, box-shadow 0.22s ease;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    color: #c8f7ea;
-}
-[data-testid="stSidebar"] [role="radiogroup"] label:hover::after {
-    width: 40%;
-    opacity: 0.4;
+    color: #b1f4df;
+    border-color: rgba(70, 227, 196, 0.35);
+    background: rgba(70, 227, 196, 0.05);
 }
 [data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"] {
     color: var(--text);
-    text-shadow: 0 0 18px rgba(70, 227, 196, 0.14);
-    transform: translateY(-1px);
+    border-color: rgba(70, 227, 196, 0.75);
+    background: linear-gradient(135deg, rgba(70, 227, 196, 0.16), rgba(0, 157, 255, 0.12));
+    box-shadow: 0 10px 28px rgba(0,0,0,0.32);
 }
 [data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"]::after {
     width: 46%;
