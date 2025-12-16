@@ -4,6 +4,8 @@ import streamlit as st
 
 GLOBAL_CSS = """
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Barlow:wght@400;600;700&display=swap');
+
 :root {
     --bg: #060910;
     --card: #0b101a;
@@ -15,10 +17,12 @@ GLOBAL_CSS = """
     --glow-green: rgba(65, 240, 192, 0.14);
 }
 html, body, [class*="css"] {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Sora', 'Barlow', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--text);
     background: var(--bg);
-    letter-spacing: 0.01em;
+    letter-spacing: 0.006em;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
 }
 .app-wrapper {
     position: relative;
@@ -145,16 +149,16 @@ div[data-testid="dataframe"] {
 h1 {
     font-weight: 800 !important;
     font-size: 2.4rem !important;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.008em;
     margin-bottom: 0.25rem;
 }
 h2 {
     font-weight: 800 !important;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.008em;
 }
 h3, h4 {
     font-weight: 700 !important;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.006em;
 }
 
 .page-wrap {
