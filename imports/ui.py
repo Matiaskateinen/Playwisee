@@ -825,9 +825,7 @@ def spacer(height: int = 32) -> None:
 
 
 def render_sidebar_loader(parse_unibet_callback):
-    st.markdown("#### Load data")
-    uploaded_file = st.file_uploader("Upload Sportsbook Excel", type=["xlsx"], key="sidebar_excel")
-    st.caption("Tip: export your betting history as .xlsx and drop it here.")
+    uploaded_file = st.file_uploader("", type=["xlsx"], key="sidebar_excel", label_visibility="collapsed")
     with st.expander("Or paste Unibet bet history", expanded=False):
         raw_text_sidebar = st.text_area("Paste your Unibet bet history here", height=180, key="sidebar_unibet")
         parse_unibet_callback(raw_text_sidebar, "parse_unibet_paste_sidebar")
