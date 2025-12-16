@@ -129,42 +129,38 @@ div[data-testid="dataframe"] {
 }
 [data-testid="stSidebar"] [role="radiogroup"] {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
     gap: 10px;
-    padding: 12px 6px 14px 6px;
+    padding: 6px 2px 10px 2px;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label {
-    position: relative;
-    display: inline-flex;
+    display: flex;
     justify-content: center;
     align-items: center;
-    gap: 6px;
-    padding: 12px 12px 11px 12px;
-    border-radius: 999px;
-    margin: 0;
+    padding: 12px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.01);
     color: var(--muted);
     font-weight: 700;
     letter-spacing: 0.02em;
     text-transform: none;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.05);
-    transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
-}
-[data-testid="stSidebar"] [role="radiogroup"] label > div:first-child {
-    display: none;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    color: #d8e7f5;
-    background: rgba(255,255,255,0.06);
-    border-color: rgba(255,255,255,0.08);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+    color: #b1f4df;
+    border-color: rgba(70, 227, 196, 0.35);
+    background: rgba(70, 227, 196, 0.05);
 }
 [data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"] {
     color: var(--text);
-    background: rgba(255,255,255,0.1);
-    border-color: rgba(255,255,255,0.16);
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 24px rgba(0,0,0,0.35);
-    transform: translateY(-1px);
+    border-color: rgba(70, 227, 196, 0.75);
+    background: linear-gradient(135deg, rgba(70, 227, 196, 0.16), rgba(0, 157, 255, 0.12));
+    box-shadow: 0 10px 28px rgba(0,0,0,0.32);
+}
+[data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"]::after {
+    width: 46%;
+    opacity: 1;
+    box-shadow: 0 0 22px rgba(0, 157, 255, 0.35);
 }
 
 h1 {
