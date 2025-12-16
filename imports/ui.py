@@ -127,23 +127,35 @@ div[data-testid="dataframe"] {
 [data-testid="stSidebar"] .st-emotion-cache-1q7ch1g p {
     color: var(--muted);
 }
+[data-testid="stSidebar"] [role="radiogroup"] {
+    display: grid;
+    gap: 10px;
+    padding: 6px 2px 10px 2px;
+}
 [data-testid="stSidebar"] [role="radiogroup"] label {
-    display: block;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.02);
-    transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.04);
+    background: rgba(255,255,255,0.01);
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    border-color: rgba(70, 227, 196, 0.5);
-    background: rgba(70, 227, 196, 0.06);
+    color: #b1f4df;
+    border-color: rgba(70, 227, 196, 0.35);
+    background: rgba(70, 227, 196, 0.05);
 }
 [data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"] {
-    border-color: rgba(70, 227, 196, 0.8);
-    background: linear-gradient(135deg, rgba(70, 227, 196, 0.12), rgba(0, 157, 255, 0.08));
-    transform: translateY(-1px);
+    color: var(--text);
+    border-color: rgba(70, 227, 196, 0.75);
+    background: linear-gradient(135deg, rgba(70, 227, 196, 0.16), rgba(0, 157, 255, 0.12));
+    box-shadow: 0 10px 28px rgba(0,0,0,0.32);
 }
 
 h1 {
