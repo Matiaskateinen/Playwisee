@@ -141,9 +141,9 @@ df_filtered_raw = df.copy()
 # ---------- NAVIGATION ----------
 nav_choice = st.sidebar.radio(
     "Navigate",
-    ["Profile", "Markets/Tickets"],
+    ["Profile", "Markets"],
     index=0,
-    help="Jump between your profile and market/ticket breakdowns.",
+    help="Jump between your profile and market breakdowns.",
 )
 
 def color_roi(v):
@@ -458,8 +458,8 @@ if nav_choice == "Deep Dives":
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-if nav_choice == "Markets/Tickets":
-    st.markdown("### Markets & Tickets")
+if nav_choice == "Markets":
+    st.markdown("### Markets")
     st.markdown("<div class='section-stack'>", unsafe_allow_html=True)
 
     st.markdown(

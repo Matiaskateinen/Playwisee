@@ -127,22 +127,43 @@ div[data-testid="dataframe"] {
 [data-testid="stSidebar"] .st-emotion-cache-1q7ch1g p {
     color: var(--muted);
 }
+[data-testid="stSidebar"] [role="radiogroup"] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px 6px 14px 6px;
+}
 [data-testid="stSidebar"] [role="radiogroup"] label {
-    display: block;
-    padding: 10px 12px;
-    margin-bottom: 8px;
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 14px;
-    background: rgba(255,255,255,0.02);
-    transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 12px 11px 12px;
+    border-radius: 999px;
+    margin: 0;
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+[data-testid="stSidebar"] [role="radiogroup"] label > div:first-child {
+    display: none;
 }
 [data-testid="stSidebar"] [role="radiogroup"] label:hover {
-    border-color: rgba(70, 227, 196, 0.5);
-    background: rgba(70, 227, 196, 0.06);
+    color: #d8e7f5;
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
 }
 [data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"] {
-    border-color: rgba(70, 227, 196, 0.8);
-    background: linear-gradient(135deg, rgba(70, 227, 196, 0.12), rgba(0, 157, 255, 0.08));
+    color: var(--text);
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.16);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 24px rgba(0,0,0,0.35);
     transform: translateY(-1px);
 }
 
