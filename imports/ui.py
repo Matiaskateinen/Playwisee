@@ -157,6 +157,11 @@ div[data-testid="dataframe"] {
     background: linear-gradient(135deg, rgba(70, 227, 196, 0.16), rgba(0, 157, 255, 0.12));
     box-shadow: 0 10px 28px rgba(0,0,0,0.32);
 }
+[data-testid="stSidebar"] [role="radiogroup"] label[aria-checked="true"]::after {
+    width: 46%;
+    opacity: 1;
+    box-shadow: 0 0 22px rgba(0, 157, 255, 0.35);
+}
 
 h1 {
     font-weight: 800 !important;
